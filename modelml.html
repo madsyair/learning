@@ -16,7 +16,7 @@
   --radius:10px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;scroll-padding-top:70px;}
 body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.75;overflow-x:hidden;}
 ::selection{background:var(--gold);color:var(--bg);}
 
@@ -74,6 +74,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
   font-family:'Outfit',sans-serif;font-size:0.78em;padding:7px 16px;border:none;
   background:transparent;color:var(--text2);cursor:pointer;border-radius:20px;
   white-space:nowrap;transition:all 0.25s;letter-spacing:0.5px;
+  text-decoration:none;display:inline-block;
 }
 .nav-btn:hover{color:#fff;background:var(--card);}
 .nav-btn.active{background:var(--gold);color:var(--bg);font-weight:600;}
@@ -222,13 +223,14 @@ code{
 <!-- ============ NAV ============ -->
 <nav class="nav">
   <div class="nav-inner">
-    <button class="nav-btn active" onclick="showSection('all',this)">Semua Model</button>
-    <button class="nav-btn" onclick="showSection('konsep',this)">Konsep & Parameter</button>
-    <button class="nav-btn" onclick="showSection('data',this)">Data Preparation</button>
-    <button class="nav-btn" onclick="showSection('pros',this)">Kelebihan & Kekurangan</button>
-    <button class="nav-btn" onclick="showSection('handling',this)">Penanganan Masalah</button>
-    <button class="nav-btn" onclick="showSection('multi',this)">Multiclass</button>
-    <button class="nav-btn" onclick="showSection('compare',this)">Tabel Ringkasan</button>
+    <a class="nav-btn active" href="#sec-intro">Pendahuluan</a>
+    <a class="nav-btn" href="#sec-models">Katalog Model</a>
+    <a class="nav-btn" href="#sec-konsep">Konsep & Parameter</a>
+    <a class="nav-btn" href="#sec-data">Data Preparation</a>
+    <a class="nav-btn" href="#sec-pros">Kelebihan & Kekurangan</a>
+    <a class="nav-btn" href="#sec-handling">Penanganan Masalah</a>
+    <a class="nav-btn" href="#sec-multi">Multiclass</a>
+    <a class="nav-btn" href="#sec-compare">Tabel Ringkasan</a>
   </div>
 </nav>
 
@@ -236,34 +238,34 @@ code{
 <div class="main">
 
 <!-- ============ INTRO ============ -->
-<div class="section-header reveal" data-section="all konsep data pros handling multi compare">
+<div class="section-header reveal" id="sec-intro">
   <span class="section-num">Pendahuluan</span>
   <h2>Mengapa Perbandingan Ini Penting?</h2>
   <p>Dalam dunia data science, tidak ada satu model yang terbaik untuk semua masalah. Setiap algoritma memiliki kekuatan, kelemahan, dan asumsi yang berbeda.</p>
 </div>
 
-<div class="narrative reveal" data-section="all konsep data pros handling multi compare">
+<div class="narrative reveal">
   <p>Panduan ini membandingkan <strong>14 model klasifikasi</strong> yang paling banyak digunakan dalam praktik — mulai dari regresi logistik yang sederhana dan interpretable, hingga deep neural network yang powerful namun kompleks. Tujuannya bukan untuk mengatakan model mana yang "terbaik", melainkan membantu Anda memahami <strong>kapan, mengapa, dan bagaimana</strong> menggunakan setiap model secara tepat.</p>
   <p>Model-model ini dikelompokkan menjadi empat keluarga besar: <strong>model linear</strong> (logistik standar & regularisasi), <strong>model probabilistik</strong> (Naive Bayes & Bayesian Network), <strong>model berbasis jarak & margin</strong> (KNN & SVM), dan <strong>model ensemble & deep learning</strong> (Random Forest, boosting family, dan neural network).</p>
 </div>
 
 <!-- ============ ALL MODELS OVERVIEW ============ -->
-<div class="section-header reveal" data-section="all konsep data pros handling multi" id="sec-models">
+<div class="section-header reveal" id="sec-models">
   <span class="section-num">Katalog Model</span>
   <h2>14 Model Klasifikasi</h2>
   <p>Klik pada setiap model untuk membuka penjelasan lengkap mencakup konsep, parameter, data preparation, kelebihan, kekurangan, dan banyak lagi.</p>
 </div>
 
-<div class="model-grid" data-section="all konsep data pros handling multi" id="model-grid"></div>
+<div class="model-grid" id="model-grid"></div>
 
 <!-- ============ KONSEP ============ -->
-<div class="section-header reveal" data-section="konsep">
+<div class="section-header reveal" id="sec-konsep">
   <span class="section-num">Aspek A & B</span>
   <h2>Konsep Dasar & Parameter Tuning</h2>
   <p>Setiap model memiliki "filosofi" berbeda dalam mendekati masalah klasifikasi. Memahami prinsip dasar ini sangat krusial sebelum melangkah ke implementasi.</p>
 </div>
 
-<div class="narrative reveal" data-section="konsep">
+<div class="narrative reveal">
   <p>Secara garis besar, model-model klasifikasi bekerja dengan salah satu dari beberapa pendekatan fundamental. <strong>Model linear</strong> seperti regresi logistik mencari batas keputusan berupa garis/bidang lurus di ruang fitur — sederhana namun terbatas. <strong>Model berbasis pohon</strong> (decision tree dan turunannya) membagi ruang fitur secara rekursif menjadi kotak-kotak keputusan. <strong>Model berbasis jarak</strong> (KNN) mengandalkan prinsip bahwa data yang mirip cenderung berada di kelas yang sama. <strong>Model kernel</strong> (SVM) memproyeksikan data ke dimensi lebih tinggi agar bisa dipisahkan secara linear. Dan <strong>neural network</strong> belajar representasi bertingkat melalui lapisan neuron yang saling terhubung.</p>
 
   <div class="highlight">
@@ -272,13 +274,13 @@ code{
 </div>
 
 <!-- ============ DATA PREP ============ -->
-<div class="section-header reveal" data-section="data">
+<div class="section-header reveal" id="sec-data">
   <span class="section-num">Aspek C & D</span>
   <h2>Persiapan Data & Kemampuan Algoritma</h2>
   <p>Tidak semua model diciptakan sama dalam menangani "kekotoran" data. Beberapa sangat sensitif terhadap pencilan dan missing values, sementara yang lain hampir tidak terpengaruh.</p>
 </div>
 
-<div class="narrative reveal" data-section="data">
+<div class="narrative reveal">
   <p>Salah satu keputusan terpenting sebelum membangun model adalah <strong>bagaimana menyiapkan data</strong>. Pertanyaan-pertanyaan kunci yang harus dijawab: Apakah ada missing values? Apakah ada pencilan (outlier) yang ekstrem? Apakah fitur-fitur memiliki skala yang sangat berbeda? Apakah ada fitur kategorik? Apakah ada multikolinearitas antar fitur?</p>
 
   <p>Secara umum, <strong>model berbasis pohon</strong> (Decision Tree, Random Forest, GBM, LightGBM, XGBoost, GPBoost) adalah yang paling "santai" — mereka tidak memerlukan scaling, robust terhadap pencilan, dan beberapa bahkan bisa menangani missing values secara native. Di sisi lain, <strong>model berbasis jarak dan gradient</strong> (KNN, SVM, Neural Network, LSTM, Deep FF) sangat sensitif terhadap skala fitur dan pencilan, sehingga preprocessing menjadi wajib.</p>
@@ -312,13 +314,13 @@ code{
 </div>
 
 <!-- ============ PROS/CONS ============ -->
-<div class="section-header reveal" data-section="pros">
+<div class="section-header reveal" id="sec-pros">
   <span class="section-num">Aspek E, F, G</span>
   <h2>Kelebihan, Kekurangan, & Kebutuhan Data</h2>
   <p>Setiap model memiliki sweet spot — konteks di mana ia bersinar dan di mana ia gagal.</p>
 </div>
 
-<div class="narrative reveal" data-section="pros">
+<div class="narrative reveal">
   <p>Tidak ada "model terbaik" universal. <strong>Regresi logistik</strong> mungkin terlihat kuno, tapi tetap menjadi pilihan pertama di industri perbankan dan medis karena interpretabilitasnya. <strong>XGBoost</strong> mendominasi kompetisi Kaggle dan benchmark tabular, tapi memerlukan tuning hati-hati. <strong>Deep learning</strong> luar biasa untuk data berukuran besar dan kompleks, tapi overkill dan bahkan underperform untuk dataset kecil tabular.</p>
 
   <div class="highlight">
@@ -329,12 +331,12 @@ code{
 </div>
 
 <!-- ============ HANDLING ============ -->
-<div class="section-header reveal" data-section="handling">
+<div class="section-header reveal" id="sec-handling">
   <span class="section-num">Aspek H, I, J, K</span>
   <h2>Penanganan Overfitting, Imbalance, Interpretasi & Seleksi Variabel</h2>
 </div>
 
-<div class="narrative reveal" data-section="handling">
+<div class="narrative reveal">
   <div class="aspect-grid">
     <div class="aspect-card">
       <h4>Overfitting</h4>
@@ -356,13 +358,13 @@ code{
 </div>
 
 <!-- ============ MULTICLASS ============ -->
-<div class="section-header reveal" data-section="multi">
+<div class="section-header reveal" id="sec-multi">
   <span class="section-num">Aspek L</span>
   <h2>Pemodelan Multiclass</h2>
   <p>Bagaimana model-model ini menangani klasifikasi dengan lebih dari 2 kelas?</p>
 </div>
 
-<div class="narrative reveal" data-section="multi">
+<div class="narrative reveal">
   <p>Kabar baiknya, <strong>sebagian besar model modern native mendukung multiclass</strong>. Decision Tree, Random Forest, Naive Bayes, KNN, dan Bayesian Network secara alami bekerja dengan berapapun jumlah kelas tanpa modifikasi. Neural network dan turunannya menggunakan <strong>softmax layer</strong> dengan categorical cross-entropy. Boosting family (XGBoost, LightGBM) membangun K tree per iterasi (satu per kelas).</p>
 
   <p>Satu-satunya model yang <strong>tidak native multiclass</strong> adalah <strong>SVM</strong> — yang memerlukan strategi dekomposisi: One-vs-Rest (OvR, K model) atau One-vs-One (OvO, K(K-1)/2 model). OvR lebih efisien untuk K besar; OvO lebih akurat tapi jauh lebih lambat.</p>
@@ -373,13 +375,13 @@ code{
 </div>
 
 <!-- ============ COMPARISON TABLE ============ -->
-<div class="section-header reveal" data-section="compare">
+<div class="section-header reveal" id="sec-compare">
   <span class="section-num">Ringkasan</span>
   <h2>Tabel Perbandingan Cepat</h2>
   <p>Panduan visual untuk memilih model berdasarkan kebutuhan.</p>
 </div>
 
-<div style="overflow-x:auto;margin:20px 0;" class="reveal" data-section="compare" id="summary-table-wrap"></div>
+<div style="overflow-x:auto;margin:20px 0;" class="reveal" id="summary-table-wrap"></div>
 
 </div><!-- main -->
 
@@ -697,14 +699,41 @@ function renderSummaryTable() {
   wrap.innerHTML = html;
 }
 
-// ============ SECTION FILTER ============
-function showSection(section, btn) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('[data-section]').forEach(el => {
-    const sections = el.dataset.section.split(' ');
-    el.style.display = sections.includes(section) ? '' : 'none';
+// ============ SCROLL-BASED NAV ACTIVE STATE ============
+function setupScrollNav() {
+  const sections = document.querySelectorAll('.section-header[id]');
+  const navBtns = document.querySelectorAll('.nav-btn');
+  const navHeight = document.querySelector('.nav').offsetHeight;
+
+  // Smooth scroll with offset for sticky nav
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = btn.getAttribute('href').slice(1);
+      const target = document.getElementById(targetId);
+      if (target) {
+        const top = target.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
   });
+
+  // Update active nav button based on scroll position
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, {
+    rootMargin: `-${navHeight + 20}px 0px -60% 0px`,
+    threshold: 0
+  });
+
+  sections.forEach(sec => observer.observe(sec));
 }
 
 // ============ SCROLL REVEAL ============
@@ -720,6 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderModels();
   renderSummaryTable();
   setupReveal();
+  setupScrollNav();
 });
 </script>
 </body>
