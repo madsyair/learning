@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ensiklopedia Model Klasifikasi — Machine Learning & Deep Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c14;--bg2:#12121e;--bg3:#1a1a2e;
+  --card:#16162a;--card2:#1e1e36;
+  --text:#d4d4e4;--text2:#9595b2;--text3:#66668a;
+  --gold:#e8b84b;--teal:#4ecdc4;--coral:#ff6b6b;
+  --blue:#5b9bd5;--green:#6bcb77;--purple:#b38bfa;
+  --border:#2a2a44;
+  --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.75;overflow-x:hidden;}
+::selection{background:var(--gold);color:var(--bg);}
+
+/* Grain overlay */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.5;
+}
+
+/* HERO */
+.hero{
+  min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:60px 24px;position:relative;z-index:2;
+  background:radial-gradient(ellipse at 30% 20%,rgba(232,184,75,0.08),transparent 50%),
+             radial-gradient(ellipse at 70% 80%,rgba(78,205,196,0.06),transparent 50%),
+             var(--bg);
+}
+.hero-badge{
+  font-family:'Outfit',sans-serif;font-size:0.72em;letter-spacing:4px;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(232,184,75,0.3);padding:6px 20px;border-radius:30px;
+  margin-bottom:28px;display:inline-block;
+  animation:fadeIn 0.8s ease both;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;font-size:clamp(2.2em,5vw,3.6em);font-weight:900;
+  line-height:1.15;max-width:800px;color:#fff;
+  animation:fadeIn 0.8s ease 0.2s both;
+}
+.hero h1 em{font-style:italic;color:var(--gold);}
+.hero-sub{
+  font-size:1.05em;color:var(--text2);max-width:620px;margin-top:20px;
+  animation:fadeIn 0.8s ease 0.4s both;
+}
+.hero-stats{
+  display:flex;gap:40px;margin-top:36px;flex-wrap:wrap;justify-content:center;
+  animation:fadeIn 0.8s ease 0.6s both;
+}
+.hero-stat{text-align:center;}
+.hero-stat .num{font-family:'Outfit',sans-serif;font-size:2em;font-weight:700;color:var(--teal);}
+.hero-stat .lbl{font-family:'Outfit',sans-serif;font-size:0.72em;letter-spacing:2px;text-transform:uppercase;color:var(--text3);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+/* NAV */
+.nav{
+  position:sticky;top:0;z-index:1000;background:rgba(12,12,20,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:0 20px;
+}
+.nav-inner{
+  max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:8px;
+  overflow-x:auto;padding:10px 0;scrollbar-width:none;
+}
+.nav-inner::-webkit-scrollbar{display:none;}
+.nav-btn{
+  font-family:'Outfit',sans-serif;font-size:0.78em;padding:7px 16px;border:none;
+  background:transparent;color:var(--text2);cursor:pointer;border-radius:20px;
+  white-space:nowrap;transition:all 0.25s;letter-spacing:0.5px;
+}
+.nav-btn:hover{color:#fff;background:var(--card);}
+.nav-btn.active{background:var(--gold);color:var(--bg);font-weight:600;}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:40px 24px 80px;position:relative;z-index:2;}
+
+/* SECTION HEADERS */
+.section-header{
+  margin:60px 0 32px;padding:40px 0 20px;
+  border-top:1px solid var(--border);position:relative;
+}
+.section-header::before{
+  content:'';position:absolute;top:-1px;left:0;width:80px;height:2px;background:var(--gold);
+}
+.section-num{
+  font-family:'Outfit',sans-serif;font-size:0.68em;letter-spacing:4px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:8px;display:block;
+}
+.section-header h2{
+  font-family:'Playfair Display',serif;font-size:1.9em;font-weight:700;color:#fff;
+  line-height:1.2;max-width:700px;
+}
+.section-header p{color:var(--text2);margin-top:10px;max-width:700px;font-size:0.95em;}
+
+/* MODEL CARDS */
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin:24px 0;}
+.model-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;
+}
+.model-card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.3);}
+.model-card.expanded{grid-column:1/-1;cursor:default;}
+.mc-top{display:flex;align-items:flex-start;gap:14px;}
+.mc-icon{
+  width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-family:'Outfit',sans-serif;font-weight:700;font-size:0.82em;color:#fff;flex-shrink:0;
+}
+.mc-info{flex:1;min-width:0;}
+.mc-name{font-family:'Outfit',sans-serif;font-weight:600;font-size:1.05em;color:#fff;}
+.mc-type{font-family:'Outfit',sans-serif;font-size:0.72em;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.mc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.mc-tag{
+  font-family:'IBM Plex Mono',monospace;font-size:0.65em;padding:3px 8px;
+  border-radius:4px;background:rgba(255,255,255,0.05);color:var(--text2);border:1px solid var(--border);
+}
+.mc-expand-icon{
+  position:absolute;top:16px;right:16px;font-size:1.2em;color:var(--text3);transition:transform 0.3s;
+}
+.model-card.expanded .mc-expand-icon{transform:rotate(45deg);}
+.mc-body{display:none;margin-top:20px;border-top:1px solid var(--border);padding-top:20px;}
+.model-card.expanded .mc-body{display:block;animation:fadeIn 0.4s ease;}
+.mc-close{
+  display:none;font-family:'Outfit',sans-serif;font-size:0.75em;
+  padding:6px 16px;border:1px solid var(--border);border-radius:6px;
+  background:rgba(255,107,107,0.1);color:var(--coral);cursor:pointer;
+  transition:all 0.2s;float:right;margin:-4px 0 8px 12px;
+}
+.mc-close:hover{background:var(--coral);color:#fff;}
+.model-card.expanded .mc-close{display:inline-block;}
+
+/* Tabs inside expanded card */
+.mc-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:18px;}
+.mc-tab{
+  font-family:'Outfit',sans-serif;font-size:0.75em;padding:6px 14px;border:1px solid var(--border);
+  border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.2s;
+}
+.mc-tab:hover{border-color:var(--teal);color:var(--teal);}
+.mc-tab.active{background:var(--teal);color:var(--bg);border-color:var(--teal);font-weight:600;}
+.mc-panel{display:none;}
+.mc-panel.active{display:block;animation:fadeIn 0.3s ease;}
+
+/* Content styling */
+.narrative{color:var(--text);line-height:1.8;font-size:0.95em;}
+.narrative h4{
+  font-family:'Outfit',sans-serif;font-size:0.88em;color:var(--gold);margin:18px 0 8px;
+  letter-spacing:1px;text-transform:uppercase;
+}
+.narrative p{margin-bottom:12px;}
+.narrative strong{color:#fff;}
+.narrative .highlight{
+  background:rgba(232,184,75,0.1);border-left:3px solid var(--gold);
+  padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0;font-size:0.92em;
+}
+.narrative .tag-need{color:var(--coral);font-weight:600;}
+.narrative .tag-ok{color:var(--green);font-weight:600;}
+.narrative .tag-partial{color:var(--gold);font-weight:600;}
+code{
+  font-family:'IBM Plex Mono',monospace;font-size:0.88em;
+  background:rgba(255,255,255,0.08);color:var(--teal);
+  padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.06);
+}
+
+/* Comparison bars */
+.cmp-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
+.cmp-label{font-family:'Outfit',sans-serif;font-size:0.78em;color:var(--text2);min-width:120px;}
+.cmp-bar-bg{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.cmp-bar{height:100%;border-radius:4px;transition:width 0.6s ease;}
+
+/* Aspect cards (in sections) */
+.aspect-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:20px 0;}
+.aspect-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;
+  transition:border-color 0.3s;
+}
+.aspect-card:hover{border-color:rgba(232,184,75,0.4);}
+.aspect-card h4{font-family:'Outfit',sans-serif;font-size:0.82em;color:var(--teal);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;}
+.aspect-card p{font-size:0.9em;color:var(--text2);line-height:1.7;}
+
+/* FOOTER */
+.footer{
+  text-align:center;padding:40px 24px;border-top:1px solid var(--border);
+  margin-top:60px;color:var(--text3);font-size:0.85em;
+  max-width:1100px;margin-left:auto;margin-right:auto;
+  position:relative;z-index:2;
+}
+
+/* Responsive */
+@media(max-width:700px){
+  .hero h1{font-size:1.8em;}
+  .model-grid{grid-template-columns:1fr;}
+  .hero-stats{gap:20px;}
+  .aspect-grid{grid-template-columns:1fr;}
+  .section-header h2{font-size:1.4em;}
+}
+
+/* Scroll animations */
+.reveal{opacity:0;transform:translateY(24px);transition:all 0.6s ease;}
+.reveal.visible{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-badge">Panduan Komprehensif</div>
+  <h1>Ensiklopedia Model <em>Klasifikasi</em></h1>
+  <p class="hero-sub">Memahami 14 algoritma Machine Learning & Deep Learning — dari konsep dasar hingga penanganan masalah data, dengan narasi yang mudah dipahami</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">14</div><div class="lbl">Model</div></div>
+    <div class="hero-stat"><div class="num">12</div><div class="lbl">Aspek Perbandingan</div></div>
+    <div class="hero-stat"><div class="num">∞</div><div class="lbl">Insight</div></div>
+  </div>
+</section>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showSection('all',this)">Semua Model</button>
+    <button class="nav-btn" onclick="showSection('konsep',this)">Konsep & Parameter</button>
+    <button class="nav-btn" onclick="showSection('data',this)">Data Preparation</button>
+    <button class="nav-btn" onclick="showSection('pros',this)">Kelebihan & Kekurangan</button>
+    <button class="nav-btn" onclick="showSection('handling',this)">Penanganan Masalah</button>
+    <button class="nav-btn" onclick="showSection('multi',this)">Multiclass</button>
+    <button class="nav-btn" onclick="showSection('compare',this)">Tabel Ringkasan</button>
+  </div>
+</nav>
+
+<!-- ============ MAIN ============ -->
+<div class="main">
+
+<!-- ============ INTRO ============ -->
+<div class="section-header reveal" data-section="all konsep data pros handling multi compare">
+  <span class="section-num">Pendahuluan</span>
+  <h2>Mengapa Perbandingan Ini Penting?</h2>
+  <p>Dalam dunia data science, tidak ada satu model yang terbaik untuk semua masalah. Setiap algoritma memiliki kekuatan, kelemahan, dan asumsi yang berbeda.</p>
+</div>
+
+<div class="narrative reveal" data-section="all konsep data pros handling multi compare">
+  <p>Panduan ini membandingkan <strong>14 model klasifikasi</strong> yang paling banyak digunakan dalam praktik — mulai dari regresi logistik yang sederhana dan interpretable, hingga deep neural network yang powerful namun kompleks. Tujuannya bukan untuk mengatakan model mana yang "terbaik", melainkan membantu Anda memahami <strong>kapan, mengapa, dan bagaimana</strong> menggunakan setiap model secara tepat.</p>
+  <p>Model-model ini dikelompokkan menjadi empat keluarga besar: <strong>model linear</strong> (logistik standar & regularisasi), <strong>model probabilistik</strong> (Naive Bayes & Bayesian Network), <strong>model berbasis jarak & margin</strong> (KNN & SVM), dan <strong>model ensemble & deep learning</strong> (Random Forest, boosting family, dan neural network).</p>
+</div>
+
+<!-- ============ ALL MODELS OVERVIEW ============ -->
+<div class="section-header reveal" data-section="all konsep data pros handling multi" id="sec-models">
+  <span class="section-num">Katalog Model</span>
+  <h2>14 Model Klasifikasi</h2>
+  <p>Klik pada setiap model untuk membuka penjelasan lengkap mencakup konsep, parameter, data preparation, kelebihan, kekurangan, dan banyak lagi.</p>
+</div>
+
+<div class="model-grid" data-section="all konsep data pros handling multi" id="model-grid"></div>
+
+<!-- ============ KONSEP ============ -->
+<div class="section-header reveal" data-section="konsep">
+  <span class="section-num">Aspek A & B</span>
+  <h2>Konsep Dasar & Parameter Tuning</h2>
+  <p>Setiap model memiliki "filosofi" berbeda dalam mendekati masalah klasifikasi. Memahami prinsip dasar ini sangat krusial sebelum melangkah ke implementasi.</p>
+</div>
+
+<div class="narrative reveal" data-section="konsep">
+  <p>Secara garis besar, model-model klasifikasi bekerja dengan salah satu dari beberapa pendekatan fundamental. <strong>Model linear</strong> seperti regresi logistik mencari batas keputusan berupa garis/bidang lurus di ruang fitur — sederhana namun terbatas. <strong>Model berbasis pohon</strong> (decision tree dan turunannya) membagi ruang fitur secara rekursif menjadi kotak-kotak keputusan. <strong>Model berbasis jarak</strong> (KNN) mengandalkan prinsip bahwa data yang mirip cenderung berada di kelas yang sama. <strong>Model kernel</strong> (SVM) memproyeksikan data ke dimensi lebih tinggi agar bisa dipisahkan secara linear. Dan <strong>neural network</strong> belajar representasi bertingkat melalui lapisan neuron yang saling terhubung.</p>
+
+  <div class="highlight">
+    <strong>Parameter tuning</strong> adalah seni menyetel "tombol-tombol" pada model agar performanya optimal. Setiap model memiliki hyperparameter berbeda — mulai dari yang sederhana seperti <em>k</em> pada KNN, hingga yang kompleks seperti arsitektur deep neural network (jumlah layer, neuron, learning rate, dropout, batch size, dan puluhan lainnya). Semakin banyak hyperparameter, semakin besar ruang pencarian, dan semakin penting strategi tuning seperti cross-validation, grid search, atau Bayesian optimization.
+  </div>
+</div>
+
+<!-- ============ DATA PREP ============ -->
+<div class="section-header reveal" data-section="data">
+  <span class="section-num">Aspek C & D</span>
+  <h2>Persiapan Data & Kemampuan Algoritma</h2>
+  <p>Tidak semua model diciptakan sama dalam menangani "kekotoran" data. Beberapa sangat sensitif terhadap pencilan dan missing values, sementara yang lain hampir tidak terpengaruh.</p>
+</div>
+
+<div class="narrative reveal" data-section="data">
+  <p>Salah satu keputusan terpenting sebelum membangun model adalah <strong>bagaimana menyiapkan data</strong>. Pertanyaan-pertanyaan kunci yang harus dijawab: Apakah ada missing values? Apakah ada pencilan (outlier) yang ekstrem? Apakah fitur-fitur memiliki skala yang sangat berbeda? Apakah ada fitur kategorik? Apakah ada multikolinearitas antar fitur?</p>
+
+  <p>Secara umum, <strong>model berbasis pohon</strong> (Decision Tree, Random Forest, GBM, LightGBM, XGBoost, GPBoost) adalah yang paling "santai" — mereka tidak memerlukan scaling, robust terhadap pencilan, dan beberapa bahkan bisa menangani missing values secara native. Di sisi lain, <strong>model berbasis jarak dan gradient</strong> (KNN, SVM, Neural Network, LSTM, Deep FF) sangat sensitif terhadap skala fitur dan pencilan, sehingga preprocessing menjadi wajib.</p>
+
+  <div class="aspect-grid">
+    <div class="aspect-card">
+      <h4>Pencilan (Outlier)</h4>
+      <p>Model tree-based hampir <strong>kebal</strong> terhadap pencilan karena split berdasarkan ranking. Sebaliknya, KNN & regresi logistik sangat sensitif — pencilan menggeser estimasi parameter atau mendistorsi perhitungan jarak.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Missing Values</h4>
+      <p><strong>XGBoost & LightGBM</strong> bisa handle missing secara native — mereka belajar arah terbaik (kiri/kanan) untuk data yang hilang. Kebanyakan model lain memerlukan imputasi terlebih dahulu.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Scaling / Normalisasi</h4>
+      <p><strong>Wajib</strong> untuk KNN, SVM, Neural Network, LSTM — tanpa scaling, fitur berskala besar mendominasi. <strong>Tidak perlu</strong> untuk semua model tree-based karena split tidak terpengaruh skala.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Encoding Kategori</h4>
+      <p>Naive Bayes & Bayesian Network secara natural menangani kategori. LightGBM native handle kategori. Kebanyakan model lain memerlukan one-hot encoding atau entity embedding.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Multikolinearitas</h4>
+      <p>Regresi logistik <strong>sangat terpengaruh</strong> (SE membesar, koefisien tidak stabil). Solusi: regularisasi Ridge/ElasticNet. Tree-based & neural network tidak terpengaruh signifikan.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Data Campuran</h4>
+      <p>LightGBM & Bayesian Network paling natural menangani campuran numerik-kategorik. Neural network bisa menggunakan embedding layer untuk fitur kategorik berdimensi tinggi.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROS/CONS ============ -->
+<div class="section-header reveal" data-section="pros">
+  <span class="section-num">Aspek E, F, G</span>
+  <h2>Kelebihan, Kekurangan, & Kebutuhan Data</h2>
+  <p>Setiap model memiliki sweet spot — konteks di mana ia bersinar dan di mana ia gagal.</p>
+</div>
+
+<div class="narrative reveal" data-section="pros">
+  <p>Tidak ada "model terbaik" universal. <strong>Regresi logistik</strong> mungkin terlihat kuno, tapi tetap menjadi pilihan pertama di industri perbankan dan medis karena interpretabilitasnya. <strong>XGBoost</strong> mendominasi kompetisi Kaggle dan benchmark tabular, tapi memerlukan tuning hati-hati. <strong>Deep learning</strong> luar biasa untuk data berukuran besar dan kompleks, tapi overkill dan bahkan underperform untuk dataset kecil tabular.</p>
+
+  <div class="highlight">
+    <strong>Aturan praktis kebutuhan data:</strong> Naive Bayes bisa bekerja dengan hanya 10–50 observasi. Regresi logistik memerlukan 10–20 observasi per variabel prediktor. Random Forest dan XGBoost optimal di 500–1000+. Deep neural network memerlukan ribuan hingga puluhan ribu observasi untuk konvergensi yang baik. Semakin kompleks model, semakin banyak data yang dibutuhkan.
+  </div>
+
+  <p>Studi benchmark terkenal oleh <strong>Grinsztajn et al. (2022, NeurIPS)</strong> menunjukkan bahwa pada data tabular tipikal, model tree-based (Random Forest, XGBoost, GBM) <em>masih mengalahkan</em> deep learning. Deep learning baru unggul pada data sangat besar, data sekuensial, atau data dengan struktur kompleks.</p>
+</div>
+
+<!-- ============ HANDLING ============ -->
+<div class="section-header reveal" data-section="handling">
+  <span class="section-num">Aspek H, I, J, K</span>
+  <h2>Penanganan Overfitting, Imbalance, Interpretasi & Seleksi Variabel</h2>
+</div>
+
+<div class="narrative reveal" data-section="handling">
+  <div class="aspect-grid">
+    <div class="aspect-card">
+      <h4>Overfitting</h4>
+      <p>Overfitting terjadi saat model "menghafal" data training. <strong>Tree-based:</strong> pruning, limit depth. <strong>Boosting:</strong> early stopping, learning rate kecil, regularisasi. <strong>Neural network:</strong> dropout, batch normalization, weight decay. <strong>Random Forest</strong> paling resistant karena bagging secara alami mengurangi variance.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Imbalanced Data</h4>
+      <p>Strategi universal: <strong>class_weight</strong>, SMOTE, threshold tuning, stratified CV. XGBoost: <code>scale_pos_weight</code>. LightGBM: <code>is_unbalance</code>. Neural network: focal loss, class weights di loss function. Naive Bayes cukup robust karena prior bisa di-adjust.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Interpretabilitas</h4>
+      <p><strong>White box:</strong> Logistik (odds ratio), Decision Tree (visualisasi aturan), Naive Bayes (probabilitas). <strong>Black box:</strong> Neural network, Deep FF, LSTM. Solusi: SHAP, LIME, TreeSHAP (sangat efisien untuk tree-based), partial dependence plots.</p>
+    </div>
+    <div class="aspect-card">
+      <h4>Seleksi Variabel</h4>
+      <p><strong>Built-in:</strong> Lasso (koefisien = 0), tree-based (feature importance). <strong>Perlu metode eksternal:</strong> Logistik standar (stepwise), KNN (PCA/filter), neural network (permutation importance). Boruta algorithm sangat baik untuk Random Forest.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MULTICLASS ============ -->
+<div class="section-header reveal" data-section="multi">
+  <span class="section-num">Aspek L</span>
+  <h2>Pemodelan Multiclass</h2>
+  <p>Bagaimana model-model ini menangani klasifikasi dengan lebih dari 2 kelas?</p>
+</div>
+
+<div class="narrative reveal" data-section="multi">
+  <p>Kabar baiknya, <strong>sebagian besar model modern native mendukung multiclass</strong>. Decision Tree, Random Forest, Naive Bayes, KNN, dan Bayesian Network secara alami bekerja dengan berapapun jumlah kelas tanpa modifikasi. Neural network dan turunannya menggunakan <strong>softmax layer</strong> dengan categorical cross-entropy. Boosting family (XGBoost, LightGBM) membangun K tree per iterasi (satu per kelas).</p>
+
+  <p>Satu-satunya model yang <strong>tidak native multiclass</strong> adalah <strong>SVM</strong> — yang memerlukan strategi dekomposisi: One-vs-Rest (OvR, K model) atau One-vs-One (OvO, K(K-1)/2 model). OvR lebih efisien untuk K besar; OvO lebih akurat tapi jauh lebih lambat.</p>
+
+  <div class="highlight">
+    <strong>Tips multiclass:</strong> Selalu gunakan <strong>macro-F1</strong> (bukan accuracy) sebagai metrik utama jika kelas tidak seimbang. Untuk neural network, <strong>label smoothing</strong> (0.1) dapat mengurangi overconfidence pada prediksi. XGBoost memerlukan <code>num_class</code> diset eksplisit.
+  </div>
+</div>
+
+<!-- ============ COMPARISON TABLE ============ -->
+<div class="section-header reveal" data-section="compare">
+  <span class="section-num">Ringkasan</span>
+  <h2>Tabel Perbandingan Cepat</h2>
+  <p>Panduan visual untuk memilih model berdasarkan kebutuhan.</p>
+</div>
+
+<div style="overflow-x:auto;margin:20px 0;" class="reveal" data-section="compare" id="summary-table-wrap"></div>
+
+</div><!-- main -->
+
+<div class="footer">
+  <p>Ensiklopedia Model Klasifikasi — Machine Learning & Deep Learning<br>
+  Referensi utama: Hastie et al. (2009), Goodfellow et al. (2016), Chen & Guestrin (2016), Ke et al. (2017), Sigrist (2022)<br>
+  Dibuat sebagai pendamping materi perbandingan model ML/DL</p>
+</div>
+
+<script>
+// ============ MODEL DATA ============
+const models = [
+  {
+    id:'logistic', name:'Regresi Logistik', type:'Linear · Parametrik', color:'#5b9bd5',
+    tags:['Interpretable','Baseline','Probabilistik'],
+    concept:`Regresi logistik adalah model klasifikasi paling fundamental dan masih menjadi standar industri di perbankan, medis, dan ilmu sosial. Prinsipnya sederhana namun elegan: model memprediksi probabilitas kelas positif menggunakan fungsi sigmoid yang mentransformasi kombinasi linear fitur menjadi nilai antara 0 dan 1.\n\nFungsi objektifnya adalah Maximum Likelihood Estimation (MLE) dengan binary cross-entropy loss. Asumsi utamanya: hubungan antara fitur dan log-odds bersifat linear, observasi independen, dan tidak ada multikolinearitas sempurna. Meskipun asumsi linearitas terdengar membatasi, dalam praktiknya model ini bekerja sangat baik untuk banyak masalah dunia nyata — terutama ketika interpretasi koefisien (odds ratio) sangat penting.`,
+    params:`Hyperparameter utama relatif sedikit: threshold klasifikasi (default 0.5, bisa disesuaikan), solver optimization (Newton-CG, LBFGS, SAG), dan max_iter. Parameter C (inverse regularization) opsional — jika digunakan, model bergeser ke arah regularisasi.`,
+    dataPrep:`<span class="tag-need">PERLU</span> penanganan pencilan (mempengaruhi estimasi MLE). <span class="tag-need">PERLU</span> imputasi missing values. Scaling <span class="tag-partial">disarankan</span> untuk konvergensi solver. <span class="tag-need">PERLU</span> one-hot encoding untuk kategori. <span class="tag-need">SANGAT PERLU</span> penanganan multikolinearitas (VIF, hapus/gabung fitur).`,
+    pros:`Sangat interpretable (odds ratio & confidence interval), inferensi statistik lengkap (p-value), output probabilitas terkalibrasi, cepat & efisien, solid sebagai baseline, regulasi industri (Basel untuk perbankan) sering mensyaratkan model interpretable.`,
+    cons:`Asumsi linearitas log-odds (tidak menangkap non-linear tanpa feature engineering manual), sensitif multikolinearitas, tidak menangkap interaksi tanpa spesifikasi eksplisit, performa rendah pada boundary non-linear.`,
+    data:`SEDIKIT. Min ~50-100 per kelas. Rule of thumb: 10-20 observasi per prediktor.`,
+    overfit:`Seleksi variabel (stepwise, AIC/BIC), cross-validation, atau beralih ke versi regularisasi.`,
+    imbalance:`class_weight='balanced', adjust threshold, SMOTE/oversampling, stratified CV.`,
+    interpret:`SANGAT TINGGI (White Box). Odds ratio per koefisien, p-value, confidence interval, marginal effects. Tidak perlu metode post-hoc.`,
+    featsel:`Tidak ada built-in. Gunakan stepwise (forward/backward), AIC/BIC, VIF, Likelihood Ratio Test.`,
+    multiclass:`Native via Multinomial Logistic (softmax). Estimasi K-1 set koefisien simultan relatif terhadap kelas referensi. Alternatif: OvR. Di sklearn: multi_class='multinomial'.`
+  },
+  {
+    id:'logreg', name:'Logistik + Regularisasi', type:'Linear · Penalized', color:'#4a86c8',
+    tags:['Ridge','Lasso','ElasticNet','Seleksi Variabel'],
+    concept:`Ekstensi dari regresi logistik standar dengan menambahkan penalti pada koefisien. Ridge (L2) menyusutkan semua koefisien menuju nol tanpa menghilangkannya — sangat efektif menangani multikolinearitas. Lasso (L1) bisa membuat koefisien tepat nol, sehingga secara otomatis melakukan seleksi variabel. ElasticNet menggabungkan keduanya dengan rasio α.\n\nIni adalah langkah pertama yang sangat baik saat Anda memiliki banyak fitur atau fitur yang berkorelasi tinggi. Regularisasi pada dasarnya mengatakan kepada model: "Jangan terlalu percaya diri pada satu fitur — distribusikan bobot secara lebih merata."`,
+    params:`λ (kekuatan regularisasi — semakin besar, semakin kuat penyusutan), α (rasio L1/L2 untuk ElasticNet), solver (saga untuk L1), C = 1/λ di sklearn.`,
+    dataPrep:`<span class="tag-need">SANGAT PERLU</span> standarisasi semua fitur — penalti sensitif terhadap skala (fitur berskala besar akan dipenalti lebih ringan jika tidak distandarisasi). <span class="tag-need">PERLU</span> imputasi missing. <span class="tag-ok">TIDAK PERLU</span> penanganan multikolinearitas (regularisasi menanganinya!).`,
+    pros:`Menangani multikolinearitas, seleksi variabel otomatis (Lasso), mencegah overfitting, robust di high-dimensional data (p >> n), tetap cukup interpretable.`,
+    cons:`Masih asumsi linearitas, perlu tuning λ via CV, Lasso tidak stabil jika fitur sangat berkorelasi (pilih salah satu secara arbitrer), bias pada estimasi koefisien.`,
+    data:`SEDIKIT-SEDANG. Min ~100 per kelas. Bisa handle p >> n (lebih banyak fitur dari observasi).`,
+    overfit:`Tuning λ via cross-validation, increase regularization strength, ElasticNet untuk balance L1+L2.`,
+    imbalance:`class_weight='balanced', adjust threshold, SMOTE, stratified CV.`,
+    interpret:`TINGGI. Koefisien non-zero menunjukkan fitur penting. Coefficient path plot menunjukkan stabilitas. Standardized coefficients memudahkan perbandingan.`,
+    featsel:`BUILT-IN (Lasso/ElasticNet). Koefisien = 0 berarti fitur terseleksi keluar. CV untuk optimal λ.`,
+    multiclass:`Native multinomial + regularisasi. Group Lasso untuk seleksi fitur koheren antar semua kelas.`
+  },
+  {
+    id:'dt', name:'Decision Tree', type:'Tree-based · Non-parametrik', color:'#6bcb77',
+    tags:['Interpretable','CART','C4.5','Pruning'],
+    concept:`Decision Tree membangun model prediksi berupa pohon keputusan dengan membagi data secara rekursif berdasarkan fitur yang paling informatif. Pada setiap node, algoritma memilih fitur dan threshold yang memaksimalkan pemisahan kelas — menggunakan Gini Impurity (CART) atau Information Gain/Entropy (C4.5, ID3).\n\nHasilnya adalah serangkaian aturan if-then yang mudah dipahami oleh siapapun, bahkan non-technical stakeholders. Misalnya: "Jika usia > 5 tahun DAN tinggi badan < 100cm, maka prediksi: stunting." Inilah kekuatan utama decision tree — transparansi total.`,
+    params:`max_depth (kedalaman maksimum), min_samples_split, min_samples_leaf, criterion (gini/entropy), max_features, ccp_alpha (cost-complexity pruning).`,
+    dataPrep:`<span class="tag-ok">TIDAK PERLU</span> scaling (split berdasarkan threshold, bukan jarak). <span class="tag-ok">TIDAK PERLU</span> penanganan pencilan (tree robust). <span class="tag-ok">TIDAK PERLU</span> penanganan multikolinearitas. Missing: tergantung implementasi (rpart bisa handle via surrogate split, sklearn tidak bisa).`,
+    pros:`Sangat interpretable (visualisasi pohon), tidak perlu preprocessing, handle campuran data, non-parametrik (tanpa asumsi distribusi), cepat.`,
+    cons:`Mudah overfitting tanpa pruning, tidak stabil (variance tinggi — perubahan kecil di data bisa menghasilkan tree sangat berbeda), greedy algorithm (bukan optimal global), decision boundary kotak-kotak.`,
+    data:`SEDIKIT-SEDANG. Min ~50-100. Tapi mudah overfitting di data kecil.`,
+    overfit:`Pruning (pre/post), limit max_depth & min_samples_leaf, cost-complexity pruning (ccp_alpha), atau gunakan ensemble (→Random Forest).`,
+    imbalance:`class_weight, cost-sensitive learning, SMOTE, stratified split.`,
+    interpret:`SANGAT TINGGI (White Box). Visualisasi pohon langsung, rule extraction, feature importance (Gini/info gain). Tidak perlu metode tambahan.`,
+    featsel:`Implisit — fitur yang tidak berguna tidak dipilih untuk split. Feature importance sebagai indikator, tapi tidak mengeliminasi secara eksplisit.`,
+    multiclass:`Native. Setiap leaf bisa berisi salah satu dari K kelas. Gini/Entropy dihitung untuk semua K kelas. Tidak perlu dekomposisi.`
+  },
+  {
+    id:'nb', name:'Naive Bayes', type:'Probabilistik · Generatif', color:'#b38bfa',
+    tags:['Bayes','Cepat','Teks','Small Data'],
+    concept:`Naive Bayes menggunakan Teorema Bayes dengan asumsi kuat bahwa semua fitur independen satu sama lain given kelas (naive independence assumption). Meskipun asumsi ini hampir tidak pernah benar di dunia nyata, model ini bekerja sangat baik dalam praktik — terutama untuk klasifikasi teks.\n\nAda tiga varian utama: Gaussian NB (untuk fitur kontinu), Multinomial NB (untuk frekuensi/count, sangat baik untuk teks), dan Bernoulli NB (untuk fitur biner). Kekuatannya: sangat cepat (training & prediksi) dan bisa bekerja dengan data sangat sedikit.`,
+    params:`Tipe distribusi (Gaussian/Multinomial/Bernoulli), var_smoothing (Laplace smoothing untuk mencegah zero probability), prior (bisa custom atau estimasi dari data).`,
+    dataPrep:`<span class="tag-ok">TIDAK PERLU</span> encoding (NB natural untuk kategori). <span class="tag-need">PERLU</span> imputasi missing. Pencilan: <span class="tag-need">PERLU</span> untuk Gaussian NB (mempengaruhi mean & variance). Multikolinearitas: <span class="tag-need">PERLU DIPERHATIKAN</span> (asumsi independensi dilanggar).`,
+    pros:`Sangat cepat, bekerja baik dengan data sedikit, natural untuk teks/kategori, sederhana, solid sebagai baseline, well-calibrated posterior.`,
+    cons:`Asumsi independensi sering dilanggar, estimasi probabilitas bisa kurang akurat, performa turun dengan fitur berkorelasi, tidak menangkap interaksi.`,
+    data:`SANGAT SEDIKIT. Bisa bekerja dengan ~10-50 data. Salah satu model terbaik untuk small data.`,
+    overfit:`Overfitting jarang terjadi (model sangat sederhana). Feature selection, Laplace smoothing, CV.`,
+    imbalance:`Adjust class priors, SMOTE/sampling, threshold tuning. NB agak robust karena prior bisa disesuaikan.`,
+    interpret:`TINGGI. Posterior probability per kelas, feature likelihood ratio, class conditional probabilities.`,
+    featsel:`Tidak ada built-in. Gunakan mutual information, Chi-square test, information gain (filter methods paling cocok).`,
+    multiclass:`Native. P(C_k|X) ∝ P(X|C_k) × P(C_k) dihitung untuk setiap kelas. Prediksi = argmax. Sangat efisien.`
+  },
+  {
+    id:'bn', name:'Bayesian Network', type:'Probabilistik · Grafis', color:'#9b6bcd',
+    tags:['DAG','Causal','Prior Knowledge','Probabilistic'],
+    concept:`Bayesian Network merepresentasikan hubungan probabilistik antar variabel dalam bentuk graf berarah tanpa siklus (DAG — Directed Acyclic Graph). Setiap node mewakili variabel, dan setiap edge mewakili dependensi kondisional.\n\nKekuatan uniknya: mampu memodelkan hubungan kausal antar variabel, mengintegrasikan prior knowledge (pengetahuan domain expert), menangani missing data melalui inferensi probabilistik, dan menjawab query "what-if" secara natural. Ini membuatnya sangat bernilai di bidang medis, epidemiologi, dan riset sosial.`,
+    params:`Algoritma structure learning (Hill Climbing, PC, K2), scoring metric (BIC/AIC/K2), max_parents, parameter estimasi (MLE/Bayesian).`,
+    dataPrep:`<span class="tag-ok">TIDAK PERLU</span> encoding kategori (natural untuk diskrit). <span class="tag-partial">BISA</span> handle missing via EM algorithm. <span class="tag-ok">TIDAK PERLU</span> penanganan multikolinearitas (memodelkan dependensi eksplisit).`,
+    pros:`Memodelkan hubungan antar variabel, handle missing data, integrasi prior knowledge, interpretable (graf), bisa causal inference.`,
+    cons:`Komputasi mahal (structure learning NP-hard), memerlukan domain expertise, sulit untuk banyak variabel kontinu, skalabilitas terbatas.`,
+    data:`SEDANG. Min ~100-500. Structure learning butuh data cukup.`,
+    overfit:`Regularisasi via BIC scoring, constraint max_parents, CV, Bayesian parameter estimation.`,
+    imbalance:`Adjust prior probabilities, cost-sensitive structure, sampling techniques.`,
+    interpret:`TINGGI. Visualisasi DAG/graf, conditional probability tables, D-separation analysis, inference queries.`,
+    featsel:`Implisit. Markov blanket dari target = fitur relevan. Structure learning otomatis menentukan.`,
+    multiclass:`Native. Variabel target diskret bisa punya >2 state. Query P(Target=k|Evidence) untuk semua k.`
+  },
+  {
+    id:'knn', name:'K-Nearest Neighbors', type:'Instance-based · Non-parametrik', color:'#e8b84b',
+    tags:['Lazy Learner','Distance','Non-parametrik'],
+    concept:`KNN adalah model "malas" (lazy learner) — tidak ada fase training sesungguhnya. Saat prediksi, model menghitung jarak ke semua data training, mencari k tetangga terdekat, dan mengambil voting mayoritas dari kelas tetangga tersebut.\n\nMeskipun konsepnya sangat sederhana dan intuitif, KNN bisa menghasilkan decision boundary yang sangat kompleks dan adaptif. Namun kelemahannya serius: lambat saat prediksi (O(n×d) per query), sangat sensitif terhadap skala fitur dan pencilan, serta menderita curse of dimensionality.`,
+    params:`k (jumlah tetangga — ganjil untuk menghindari tie), metrik jarak (Euclidean, Manhattan, Minkowski), weights (uniform/distance), algorithm (ball_tree, kd_tree, brute).`,
+    dataPrep:`<span class="tag-need">SANGAT PERLU</span> standarisasi (jarak didominasi fitur berskala besar). <span class="tag-need">SANGAT PERLU</span> penanganan pencilan (mempengaruhi jarak). <span class="tag-need">PERLU</span> imputasi missing. <span class="tag-need">PERLU</span> encoding kategori.`,
+    pros:`Konsep sederhana & intuitif, non-parametrik, tidak ada training phase, decision boundary adaptif, fleksibel.`,
+    cons:`Lambat saat prediksi, curse of dimensionality, sensitif terhadap skala & pencilan, butuh banyak memori (simpan semua data), sulit menentukan k optimal.`,
+    data:`SEDIKIT-SEDANG. Min ~50-100. Performa turun drastis di high-dimensional space.`,
+    overfit:`Tuning k (k besar → less overfitting), CV, feature selection / dimensionality reduction (PCA), distance weighting.`,
+    imbalance:`Distance weighting, SMOTE/sampling, adjust k. Tidak ada mekanisme built-in khusus.`,
+    interpret:`SEDANG. Analisis tetangga terdekat per prediksi, feature contribution analysis, prototype-based explanation.`,
+    featsel:`Tidak ada built-in. SANGAT PERLU feature selection/PCA karena curse of dimensionality.`,
+    multiclass:`Native. Voting mayoritas dari k tetangga langsung berlaku untuk K kelas. Alternatif: weighted voting.`
+  },
+  {
+    id:'svm', name:'Support Vector Machine', type:'Kernel · Margin-based', color:'#e67e22',
+    tags:['Kernel Trick','Margin','High-dimensional'],
+    concept:`SVM mencari hyperplane (bidang pemisah) optimal yang memisahkan dua kelas dengan margin sebesar mungkin. "Optimal" di sini berarti jarak dari hyperplane ke data terdekat (support vectors) dimaksimalkan — ini memberikan generalisasi yang baik.\n\nKekuatan SVM terletak pada kernel trick: kemampuan untuk secara implisit memproyeksikan data ke ruang dimensi lebih tinggi (bahkan tak hingga!) di mana data bisa dipisahkan secara linear. Kernel RBF (Radial Basis Function) adalah yang paling populer. SVM sangat efektif di high-dimensional space dan ketika jumlah fitur lebih banyak dari observasi.`,
+    params:`C (regularisasi — trade-off margin vs misclassfication), kernel (linear, RBF, polynomial, sigmoid), γ (parameter RBF — mengontrol "reach" tiap support vector), degree (polynomial), class_weight.`,
+    dataPrep:`<span class="tag-need">SANGAT PERLU</span> standarisasi (sangat sensitif terhadap skala). <span class="tag-need">PERLU</span> penanganan pencilan (terutama RBF). <span class="tag-need">PERLU</span> imputasi missing. <span class="tag-need">PERLU</span> encoding kategori.`,
+    pros:`Efektif di high-dimensional space, robust terhadap overfitting (margin), kernel trick untuk non-linear, generalisasi baik, efisien memori (hanya support vectors).`,
+    cons:`Lambat untuk dataset besar (O(n²)–O(n³)), sulit memilih kernel & parameter, tidak probabilistik tanpa Platt scaling, tidak interpretable, tidak efisien untuk very large data.`,
+    data:`SEDIKIT-SEDANG. Min ~50-200. SVM efektif bahkan di data relatif kecil.`,
+    overfit:`Tuning C (soft margin), CV, feature selection, pilih kernel yang sesuai.`,
+    imbalance:`class_weight='balanced', cost-sensitive SVM (different C per class), SMOTE, stratified CV.`,
+    interpret:`RENDAH (Black Box). Gunakan SHAP, LIME, support vector analysis, partial dependence plots.`,
+    featsel:`Tidak ada built-in. Gunakan RFE (Recursive Feature Elimination) dengan SVM. L1-SVM (linear kernel) bisa seleksi.`,
+    multiclass:`TIDAK native (binary). Strategi: OvR (K model, lebih efisien) atau OvO (K(K-1)/2 model, lebih akurat tapi lambat). Platt scaling per-class untuk probabilitas.`
+  },
+  {
+    id:'nn', name:'Neural Network (Feed Forward)', type:'Neural · Connectionist', color:'#ff6b6b',
+    tags:['Universal Approximator','Backpropagation','Hidden Layers'],
+    concept:`Neural Network (NN) terdiri dari lapisan-lapisan neuron yang saling terhubung: input layer, satu atau beberapa hidden layer, dan output layer. Setiap koneksi memiliki bobot (weight) yang dipelajari melalui backpropagation dan gradient descent.\n\nTeorema Universal Approximation (Hornik et al., 1989) membuktikan bahwa NN dengan satu hidden layer dan cukup neuron bisa mengaproksimasi fungsi apapun. Dalam praktik, NN sangat baik menangkap pola non-linear kompleks, tapi memerlukan data yang banyak dan tuning yang hati-hati. "Shallow" NN (1-2 hidden layer) berbeda dari "Deep" NN (banyak layer) yang dibahas terpisah.`,
+    params:`Jumlah hidden layer & neuron per layer, learning rate, batch size, epochs, activation function (ReLU, sigmoid, tanh), optimizer (Adam, SGD), dropout rate.`,
+    dataPrep:`<span class="tag-need">SANGAT PERLU</span> standarisasi (gradient descent optimal dengan data ter-standarisasi). <span class="tag-partial">SEBAGIAN</span> pencilan (bisa terganggu). <span class="tag-need">PERLU</span> imputasi missing. <span class="tag-need">PERLU</span> encoding kategori (one-hot/embedding).`,
+    pros:`Universal approximator, menangkap non-linear kompleks, fleksibel arsitektur, bisa untuk berbagai tipe masalah, transfer learning mungkin.`,
+    cons:`Black box, butuh banyak data, banyak hyperparameter, sensitif terhadap inisialisasi, mudah overfitting, komputasi mahal.`,
+    data:`BANYAK. Min ~1000+. Semakin kompleks arsitektur, semakin banyak data.`,
+    overfit:`Dropout, early stopping, L1/L2 regularization, batch normalization, data augmentation, reduce complexity.`,
+    imbalance:`Class weights di loss, focal loss, SMOTE, threshold tuning, oversampling/augmentation.`,
+    interpret:`RENDAH (Black Box). Gunakan SHAP/LIME, permutation importance, partial dependence plots, saliency maps.`,
+    featsel:`Tidak ada built-in. Gunakan permutation importance, SHAP-based selection, wrapper methods.`,
+    multiclass:`Native. Output layer K neuron + softmax activation. Loss: categorical cross-entropy.`
+  },
+  {
+    id:'rf', name:'Random Forest', type:'Ensemble · Bagging', color:'#2ecc71',
+    tags:['Bagging','OOB','Robust','Feature Importance'],
+    concept:`Random Forest menggabungkan banyak decision tree yang dibangun secara independen melalui dua mekanisme randomisasi: (1) bootstrap sampling — setiap tree dibangun dari sampel acak data training (dengan replacement), dan (2) random feature subset — di setiap node split, hanya subset acak fitur yang dipertimbangkan.\n\nHasilnya adalah ensemble yang sangat robust, akurat, dan sulit overfitting. Prediksi akhir diambil dari voting mayoritas (klasifikasi) atau rata-rata (regresi) semua tree. Random Forest juga memberikan estimasi error "gratis" via Out-of-Bag (OOB) — data yang tidak tersampling di setiap tree digunakan sebagai validasi internal.`,
+    params:`n_estimators (jumlah tree — lebih banyak = lebih stabil, tapi diminishing return), max_depth, max_features (√p untuk klasifikasi), min_samples_split/leaf, bootstrap, oob_score.`,
+    dataPrep:`<span class="tag-ok">TIDAK PERLU</span> scaling (tree-based). <span class="tag-ok">TIDAK PERLU</span> penanganan pencilan (sangat robust). <span class="tag-ok">TIDAK PERLU</span> penanganan multikolinearitas. Missing: tergantung implementasi (R bisa via proximity imputation).`,
+    pros:`Akurasi tinggi out-of-the-box, sangat robust, feature importance built-in, tidak perlu preprocessing, OOB error gratis, parallelizable, jarang overfitting.`,
+    cons:`Lambat untuk prediksi (banyak tree), model besar (memori), kurang interpretable dari single tree, tidak menangkap trend/extrapolate.`,
+    data:`SEDANG. Min ~200-500. Lebih robust di data kecil daripada single tree.`,
+    overfit:`Increase n_estimators, limit max_depth, increase min_samples_leaf. Overfitting jarang karena bagging.`,
+    imbalance:`class_weight='balanced'/'balanced_subsample', SMOTE, stratified bootstrap, threshold tuning.`,
+    interpret:`SEDANG. Feature importance (MDI, MDA), SHAP values, PDP, ICE plots, proximity analysis.`,
+    featsel:`Built-in. Feature importance (Gini, permutation). Boruta algorithm. SHAP-based selection.`,
+    multiclass:`Native. Tiap tree native multiclass; voting mayoritas. Tidak perlu dekomposisi.`
+  },
+  {
+    id:'gbm', name:'GBM & LightGBM', type:'Ensemble · Boosting', color:'#1abc9c',
+    tags:['Boosting','Sequential','GOSS','Histogram'],
+    concept:`Gradient Boosting Machine (GBM) membangun ensemble tree secara sekuensial — setiap tree baru memperbaiki kesalahan (residual) dari ensemble sebelumnya. Ini berbeda dari Random Forest yang membangun tree secara paralel dan independen.\n\nLightGBM (Microsoft, 2017) adalah implementasi GBM yang sangat efisien dengan dua inovasi kunci: (1) Gradient-based One-Side Sampling (GOSS) — memprioritaskan data dengan gradient besar, dan (2) Exclusive Feature Bundling (EFB) — menggabungkan fitur yang jarang aktif bersamaan. Hasilnya: 20× lebih cepat dari XGBoost dengan akurasi hampir sama. LightGBM juga menggunakan leaf-wise growth (vs level-wise) yang lebih efisien.`,
+    params:`n_estimators, learning_rate (kecil + banyak tree = lebih baik), max_depth, num_leaves (LightGBM, kontrol kompleksitas), subsample, colsample_bytree, reg_alpha/lambda, min_child_samples.`,
+    dataPrep:`<span class="tag-ok">TIDAK PERLU</span> scaling. <span class="tag-ok">TIDAK PERLU</span> penanganan pencilan. LightGBM: <span class="tag-ok">BISA</span> handle missing native & kategori native. GBM sklearn: perlu imputasi dan encoding.`,
+    pros:`Akurasi sangat tinggi, LightGBM sangat cepat & memory efficient, handle missing & kategori native (LightGBM), feature importance built-in, scalable, SOTA di banyak kompetisi.`,
+    cons:`Mudah overfitting jika tidak di-tune, banyak hyperparameter, sensitif learning rate, training sekuensial (tidak paralel per iterasi), perlu tuning hati-hati.`,
+    data:`SEDANG-BANYAK. Min ~500-1000 untuk optimal. LightGBM lebih efisien.`,
+    overfit:`Early stopping (sangat penting!), learning_rate kecil, limit max_depth/num_leaves, subsample & colsample, regularisasi L1/L2.`,
+    imbalance:`is_unbalance=True (LightGBM), scale_pos_weight, SMOTE, focal loss (custom), stratified CV.`,
+    interpret:`RENDAH-SEDANG. Feature importance (gain, split), SHAP values (TreeSHAP sangat efisien), PDP, ICE plots.`,
+    featsel:`Built-in. Feature importance (gain/split/SHAP). LightGBM sangat efisien untuk feature screening.`,
+    multiclass:`Native. objective='multiclass', num_class=K. Membangun K tree per iterasi boosting.`
+  },
+  {
+    id:'xgb', name:'XGBoost', type:'Ensemble · Regularized Boosting', color:'#f39c12',
+    tags:['SOTA Tabular','Regularisasi','Missing Native','Kaggle'],
+    concept:`XGBoost (Chen & Guestrin, 2016) adalah gradient boosting yang ditingkatkan dengan beberapa inovasi penting: (1) regularisasi eksplisit pada bobot leaf (L1/L2), (2) penggunaan second-order gradient (informasi Newton-Raphson), (3) sparsity-aware algorithm untuk handle missing values, dan (4) weighted quantile sketch untuk approximate split finding.\n\nXGBoost menjadi "senjata rahasia" di kompetisi data science dan masih menjadi SOTA (State of the Art) pada banyak benchmark data tabular. Kemampuannya menangani missing values secara native (belajar arah terbaik untuk missing di setiap split) sangat powerful.`,
+    params:`n_estimators, learning_rate, max_depth, min_child_weight, γ (min split loss), subsample, colsample_bytree, reg_alpha (L1), reg_lambda (L2), scale_pos_weight.`,
+    dataPrep:`<span class="tag-ok">TIDAK PERLU</span> scaling (tree-based). <span class="tag-ok">TIDAK PERLU</span> penanganan pencilan. <span class="tag-ok">BISA</span> handle missing native. <span class="tag-partial">PERLU</span> encoding kategori (native experimental di versi baru).`,
+    pros:`SOTA di banyak benchmark tabular, regularisasi built-in, handle missing native, scalable & parallelizable, feature importance built-in, customizable objective.`,
+    cons:`Banyak hyperparameter, mudah overfitting jika salah tune, training bisa lambat, kurang interpretable, perlu tuning cermat.`,
+    data:`SEDANG-BANYAK. Min ~500-1000. Regularisasi membantu di data lebih kecil.`,
+    overfit:`Early stopping, regularisasi (reg_alpha, reg_lambda, γ), limit tree complexity, subsample & colsample, learning rate kecil + banyak tree.`,
+    imbalance:`scale_pos_weight (rasio negatif/positif), custom objective, SMOTE, stratified CV, threshold tuning.`,
+    interpret:`RENDAH-SEDANG. Feature importance (gain, weight, cover), SHAP (TreeSHAP), PDP, LIME, waterfall plots.`,
+    featsel:`Built-in. Feature importance (gain) → threshold. SHAP-based. Boruta. feature_importances_ + RFE.`,
+    multiclass:`Native. objective='multi:softmax' (label) atau 'multi:softprob' (probabilitas). Wajib set num_class. Membangun K tree per boosting round.`
+  },
+  {
+    id:'gpb', name:'GPBoost', type:'Ensemble · Mixed Effects', color:'#16a085',
+    tags:['Mixed Model','Hierarki','Klaster','Spatial'],
+    concept:`GPBoost (Sigrist, 2022) adalah model unik yang menggabungkan kekuatan gradient boosting (tree-ensemble untuk fixed effects) dengan Gaussian Process dan mixed effects model (untuk random effects). Ini sangat berguna untuk data yang memiliki struktur hierarki, klaster, atau spatial.\n\nContoh kasus: prediksi kemiskinan di Indonesia di mana observasi bersarang dalam kabupaten (grouped random effects) dan lokasi geografis mempengaruhi pola (spatial random effects). GPBoost menangkap non-linearitas melalui tree boosting sambil memodelkan dependensi antar observasi melalui random effects — sesuatu yang tidak bisa dilakukan oleh XGBoost/LightGBM standar.`,
+    params:`n_estimators, learning_rate, max_depth, num_leaves, likelihood (Gaussian/Bernoulli), group variable, covariance structure (exponential/Matérn untuk GP), Vecchia approximation parameters.`,
+    dataPrep:`<span class="tag-ok">TIDAK PERLU</span> scaling (tree-based component). <span class="tag-ok">BISA</span> handle missing (via LightGBM backend). <span class="tag-ok">BISA</span> handle kategori native (LightGBM-based).`,
+    pros:`Menggabungkan boosting + mixed model, cocok data hierarki/klaster/spatial, menangkap fixed + random effects, handle missing & kategori, unik untuk nested/grouped data.`,
+    cons:`Relatif baru (komunitas kecil), dokumentasi terbatas, komputasi lebih mahal dari boosting biasa, perlu spesifikasi group variable, kurang mature.`,
+    data:`SEDANG-BANYAK. Min ~500+ total, dengan cukup observasi per group/cluster.`,
+    overfit:`Semua teknik boosting (early stopping, regularisasi). Random effects sendiri mengurangi overfitting pada data klaster. CV per group.`,
+    imbalance:`Mewarisi teknik LightGBM. Random effects bisa partial compensate jika imbalance terkait group.`,
+    interpret:`SEDANG. Feature importance (tree component), random effects estimates per group, SHAP, PDP.`,
+    featsel:`Built-in via LightGBM feature importance + random effects structure. SHAP-based.`,
+    multiclass:`Native (mewarisi LightGBM multiclass). Untuk ordinal multiclass: custom objective bisa lebih tepat.`
+  },
+  {
+    id:'lstm', name:'LSTM', type:'Deep Learning · Recurrent', color:'#e74c3c',
+    tags:['Sequence','Time Series','Gates','Temporal'],
+    concept:`Long Short-Term Memory (Hochreiter & Schmidhuber, 1997) adalah arsitektur recurrent neural network (RNN) yang dirancang khusus untuk menangkap dependensi jangka panjang dalam data sekuensial. LSTM mengatasi masalah vanishing gradient pada RNN standar melalui mekanisme tiga gate: forget gate (apa yang dilupakan), input gate (informasi baru apa yang disimpan), dan output gate (apa yang dikeluarkan).\n\nLSTM sangat powerful untuk time series forecasting, natural language processing, speech recognition, dan masalah apapun di mana urutan data penting. Namun untuk data tabular non-sekuensial, LSTM biasanya overkill dan underperform dibanding tree-based models.`,
+    params:`units per layer, jumlah LSTM layers, sequence length, learning rate, batch size, dropout & recurrent dropout, epochs, optimizer, bidirectional (True/False).`,
+    dataPrep:`<span class="tag-need">SANGAT PERLU</span> standarisasi (sangat sensitif terhadap skala). <span class="tag-need">PERLU</span> imputasi/masking missing. <span class="tag-need">PERLU</span> encoding kategori (embedding). <span class="tag-partial">SEBAGIAN</span> pencilan (scaling & clipping direkomendasikan). Data harus disusun sebagai sequences.`,
+    pros:`Menangkap dependensi temporal panjang, gate mechanism mencegah vanishing gradient, cocok untuk time series & sequence, bisa bidirectional, SOTA untuk banyak task sekuensial.`,
+    cons:`Lambat training (sequential by nature), banyak parameter, sulit di-tune, overkill untuk non-sequential data, butuh banyak data, sulit interpretasi.`,
+    data:`BANYAK. Min ~1000-10000+. Sequence data memerlukan banyak sampel.`,
+    overfit:`Dropout & recurrent dropout, early stopping, L2 regularization, reduce units/layers, gradient clipping, data augmentation.`,
+    imbalance:`Class weights di loss, focal loss, SMOTE pada sequence, oversampling/augmentation, threshold tuning.`,
+    interpret:`SANGAT RENDAH (Black Box). Attention weights visualization, SHAP for sequences, gradient-based attribution, LIME, feature occlusion.`,
+    featsel:`Tidak ada built-in. Attention weights sebagai proxy. Gradient-based sensitivity. Wrapper methods.`,
+    multiclass:`Native. Output: Dense layer K neuron + softmax. Loss: categorical cross-entropy. Bisa sequence-to-label (many-to-one) atau sequence-to-sequence.`
+  },
+  {
+    id:'dff', name:'Deep Feed Forward', type:'Deep Learning · Dense', color:'#c0392b',
+    tags:['Deep','Hierarchical Features','GPU','Transfer Learning'],
+    concept:`Deep Feed Forward Network (DNN) adalah neural network dengan banyak hidden layer (biasanya 3–20+). Berbeda dari shallow NN (1–2 layer), deep network mampu belajar representasi fitur secara bertingkat (hierarchical feature learning) — layer awal belajar pola sederhana, layer menengah mengkombinasikan menjadi pola lebih kompleks, dan layer atas membuat keputusan berdasarkan abstraksi tingkat tinggi.\n\nDNN memerlukan teknik-teknik khusus yang tidak diperlukan shallow NN: batch normalization (stabilisasi distribusi internal), skip connections (mengatasi degradation problem), dan advanced initialization (Xavier/He). DNN bersinar pada dataset sangat besar dengan pola yang sangat kompleks, tapi pada data tabular tipikal sering kalah dari tree-based ensemble.`,
+    params:`Jumlah layer & neuron, learning rate, batch size, epochs, activation (ReLU, GELU, Swish), dropout per layer, optimizer (Adam, AdamW), weight initialization (He/Xavier), batch normalization, learning rate scheduler.`,
+    dataPrep:`<span class="tag-need">SANGAT PERLU</span> standarisasi/normalisasi. <span class="tag-need">PERLU</span> imputasi missing. <span class="tag-need">PERLU</span> encoding kategori (embedding/one-hot). <span class="tag-partial">SEBAGIAN</span> pencilan (batch normalization membantu).`,
+    pros:`Kapasitas model sangat besar, hierarchical feature learning, transfer learning & fine-tuning, fleksibel arsitektur, bisa menangani data sangat kompleks, GPU acceleration.`,
+    cons:`Black box (lebih parah dari shallow NN), butuh sangat banyak data, komputasi sangat mahal, sangat banyak hyperparameter, mudah overfitting, perlu GPU.`,
+    data:`SANGAT BANYAK. Min ~5000-10000+. Deep network butuh data masif.`,
+    overfit:`Dropout (setiap layer), early stopping, batch normalization, L1/L2, weight decay, data augmentation, reduce depth/width, learning rate scheduling.`,
+    imbalance:`Class weights, focal loss, SMOTE/augmentation, Mixup/CutMix, threshold tuning per kelas, cost-sensitive learning.`,
+    interpret:`SANGAT RENDAH (Black Box). SHAP/LIME, permutation importance, gradient saliency, activation visualization, layer-wise relevance propagation (LRP).`,
+    featsel:`Tidak ada built-in. Permutation importance, SHAP, gradient-based analysis, Neural Architecture Search (NAS).`,
+    multiclass:`Native. Output layer K neuron + softmax. Label smoothing (0.1) sangat direkomendasikan. Mixup/CutMix efektif. Width hidden layer ≥ jumlah kelas.`
+  }
+];
+
+// ============ RENDER MODEL CARDS ============
+function renderModels() {
+  const grid = document.getElementById('model-grid');
+  grid.innerHTML = models.map((m, i) => `
+    <div class="model-card" id="card-${m.id}" onclick="toggleCard('${m.id}',event)" style="animation-delay:${i*0.05}s">
+      <div class="mc-expand-icon">+</div>
+      <div class="mc-top">
+        <div class="mc-icon" style="background:${m.color}">${(i+1)}</div>
+        <div class="mc-info">
+          <div class="mc-name">${m.name}</div>
+          <div class="mc-type">${m.type}</div>
+        </div>
+      </div>
+      <div class="mc-tags">${m.tags.map(t => `<span class="mc-tag">${t}</span>`).join('')}</div>
+      <div class="mc-body">
+        <button class="mc-close" onclick="closeCard('${m.id}',event)">✕ Tutup</button>
+        <div class="mc-tabs">
+          <button class="mc-tab active" onclick="switchModelTab('${m.id}','konsep',this,event)">Konsep</button>
+          <button class="mc-tab" onclick="switchModelTab('${m.id}','params',this,event)">Parameter</button>
+          <button class="mc-tab" onclick="switchModelTab('${m.id}','data',this,event)">Data Prep</button>
+          <button class="mc-tab" onclick="switchModelTab('${m.id}','proscons',this,event)">Pro / Kontra</button>
+          <button class="mc-tab" onclick="switchModelTab('${m.id}','handling',this,event)">Handling</button>
+          <button class="mc-tab" onclick="switchModelTab('${m.id}','multiclass',this,event)">Multiclass</button>
+        </div>
+        <div class="mc-panel active" id="${m.id}-konsep"><div class="narrative">${m.concept.split('\n\n').map(p=>`<p>${p}</p>`).join('')}</div></div>
+        <div class="mc-panel" id="${m.id}-params"><div class="narrative"><h4>Hyperparameter Utama</h4><p>${m.params}</p></div></div>
+        <div class="mc-panel" id="${m.id}-data"><div class="narrative"><h4>Persiapan Data</h4><p>${m.dataPrep}</p><h4>Kebutuhan Jumlah Data</h4><p>${m.data}</p></div></div>
+        <div class="mc-panel" id="${m.id}-proscons"><div class="narrative"><h4>Kelebihan</h4><p>${m.pros}</p><h4>Kekurangan</h4><p>${m.cons}</p></div></div>
+        <div class="mc-panel" id="${m.id}-handling"><div class="narrative">
+          <h4>Penanganan Overfitting</h4><p>${m.overfit}</p>
+          <h4>Penanganan Imbalanced Data</h4><p>${m.imbalance}</p>
+          <h4>Interpretabilitas</h4><p>${m.interpret}</p>
+          <h4>Seleksi Variabel</h4><p>${m.featsel}</p>
+        </div></div>
+        <div class="mc-panel" id="${m.id}-multiclass"><div class="narrative"><h4>Strategi Multiclass</h4><p>${m.multiclass}</p></div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCard(id, e) {
+  const card = document.getElementById('card-' + id);
+  // Don't toggle if clicking inside tab buttons
+  if (e.target.classList.contains('mc-tab')) return;
+  // Don't toggle if clicking inside the expanded body content
+  if (card.classList.contains('expanded') && e.target.closest('.mc-body')) return;
+  card.classList.toggle('expanded');
+}
+
+function closeCard(id, e) {
+  e.stopPropagation();
+  document.getElementById('card-' + id).classList.remove('expanded');
+}
+
+function switchModelTab(modelId, tabName, btn, e) {
+  e.stopPropagation();
+  const card = document.getElementById('card-' + modelId);
+  card.querySelectorAll('.mc-tab').forEach(t => t.classList.remove('active'));
+  card.querySelectorAll('.mc-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(modelId + '-' + tabName).classList.add('active');
+}
+
+// ============ SUMMARY TABLE ============
+function renderSummaryTable() {
+  const wrap = document.getElementById('summary-table-wrap');
+  const aspects = [
+    { label:'Perlu Scaling?', key: m => m.dataPrep.includes('TIDAK PERLU') && m.dataPrep.includes('scaling') ? '✗ Tidak' : m.dataPrep.includes('SANGAT PERLU') && m.dataPrep.includes('standarisasi') ? '✓ Wajib' : '~ Disarankan' },
+    { label:'Handle Missing?', key: m => m.dataPrep.includes('handle missing native') || m.dataPrep.includes('BISA</span> handle missing') ? '✓ Native' : '✗ Imputasi' },
+    { label:'Robust Outlier?', key: m => m.dataPrep.includes('TIDAK PERLU</span> penanganan pencilan') ? '✓ Ya' : '✗ Sensitif' },
+    { label:'Kebutuhan Data', key: m => m.data.split('.')[0] },
+    { label:'Interpretabilitas', key: m => m.interpret.split('.')[0] },
+    { label:'Native Multiclass?', key: m => m.multiclass.includes('TIDAK native') ? '✗ OvR/OvO' : '✓ Ya' },
+  ];
+  let html = `<table style="width:100%;border-collapse:collapse;font-family:'Outfit',sans-serif;font-size:0.78em;">
+    <thead><tr><th style="background:var(--gold);color:var(--bg);padding:10px 12px;text-align:left;position:sticky;left:0;z-index:2;">Aspek</th>`;
+  models.forEach(m => { html += `<th style="background:${m.color};color:#fff;padding:10px 8px;text-align:center;min-width:100px;font-size:0.85em;">${m.name.split('(')[0].split('+')[0].trim()}</th>`; });
+  html += `</tr></thead><tbody>`;
+  aspects.forEach((a, ri) => {
+    const rowBg = ri%2===0 ? '#16162a' : '#12121e';
+    html += `<tr style="background:${rowBg}">`;
+    html += `<td style="padding:10px 12px;color:var(--gold);font-weight:600;border:1px solid var(--border);position:sticky;left:0;background:${rowBg};z-index:1;">${a.label}</td>`;
+    models.forEach(m => {
+      const val = a.key(m);
+      const color = val.startsWith('✓') ? 'var(--green)' : val.startsWith('✗') ? 'var(--coral)' : 'var(--text2)';
+      html += `<td style="padding:8px;text-align:center;border:1px solid var(--border);color:${color};font-size:0.92em;">${val}</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+}
+
+// ============ SECTION FILTER ============
+function showSection(section, btn) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[data-section]').forEach(el => {
+    const sections = el.dataset.section.split(' ');
+    el.style.display = sections.includes(section) ? '' : 'none';
+  });
+}
+
+// ============ SCROLL REVEAL ============
+function setupReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', () => {
+  renderModels();
+  renderSummaryTable();
+  setupReveal();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan Lengkap Metrik Evaluasi Model Klasifikasi</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --paper: #faf8f5;
+    --accent: #c0392b;
+    --accent2: #2980b9;
+    --accent3: #27ae60;
+    --muted: #7f8c8d;
+    --border: #d5c9b1;
+    --highlight: #fef3cd;
+    --card: #ffffff;
+    --tp: #27ae60;
+    --tn: #2980b9;
+    --fp: #e67e22;
+    --fn: #c0392b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1.7;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 30px 60px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 50px 20px 40px;
+    border-bottom: 3px double var(--border);
+    margin-bottom: 40px;
+  }
+  header h1 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 2.2em;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  header .subtitle {
+    font-size: 1.05em;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* TOC */
+  .toc {
+    background: linear-gradient(135deg, #f5f0e8, #ede7dc);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 30px;
+    margin-bottom: 40px;
+    columns: 2;
+    column-gap: 30px;
+  }
+  .toc h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    column-span: all;
+  }
+  .toc a {
+    display: block;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.92em;
+    padding: 3px 0;
+    break-inside: avoid;
+  }
+  .toc a:hover { color: var(--accent); }
+  .toc a .num { 
+    font-family: 'JetBrains Mono', monospace; 
+    font-size: 0.8em; 
+    color: var(--accent);
+    margin-right: 6px;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 45px;
+    page-break-inside: avoid;
+  }
+  h2 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin-bottom: 18px;
+  }
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.15em;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 22px 0 10px;
+  }
+  h4 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--accent2);
+    margin: 16px 0 8px;
+  }
+
+  p { margin-bottom: 12px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .card.formula {
+    border-left: 4px solid var(--accent2);
+    background: #f8fafc;
+  }
+  .card.example {
+    border-left: 4px solid var(--accent3);
+    background: #f0faf4;
+  }
+  .card.warning {
+    border-left: 4px solid var(--fp);
+    background: #fef9f0;
+  }
+  .card.tip {
+    border-left: 4px solid var(--accent);
+    background: #fdf5f4;
+  }
+  .card-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .card.formula .card-label { color: var(--accent2); }
+  .card.example .card-label { color: var(--accent3); }
+  .card.warning .card-label { color: var(--fp); }
+  .card.tip .card-label { color: var(--accent); }
+
+  /* Confusion Matrix */
+  .cm-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .cm-table {
+    border-collapse: collapse;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9em;
+  }
+  .cm-table th, .cm-table td {
+    padding: 14px 20px;
+    text-align: center;
+    border: 2px solid #bbb;
+  }
+  .cm-table th {
+    background: #34495e;
+    color: white;
+    font-weight: 600;
+  }
+  .cm-table .corner {
+    background: #2c3e50;
+    color: white;
+    font-weight: 700;
+  }
+  .cm-table .label-row {
+    background: #34495e;
+    color: white;
+    font-weight: 600;
+    writing-mode: horizontal-tb;
+  }
+  .cm-tp { background: #d5f5e3; color: #1e8449; font-weight: 700; font-size: 1.1em; }
+  .cm-tn { background: #d6eaf8; color: #1a5276; font-weight: 700; font-size: 1.1em; }
+  .cm-fp { background: #fdebd0; color: #b9770e; font-weight: 700; font-size: 1.1em; }
+  .cm-fn { background: #fadbd8; color: #922b21; font-weight: 700; font-size: 1.1em; }
+
+  /* Metric summary table */
+  .metric-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88em;
+    margin: 16px 0;
+  }
+  .metric-table th {
+    background: var(--accent2);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.92em;
+  }
+  .metric-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e0d8cc;
+    vertical-align: top;
+  }
+  .metric-table tr:nth-child(even) { background: #f8f5f0; }
+  .metric-table tr:hover { background: #eee8dd; }
+
+  /* Math */
+  .math-block {
+    text-align: center;
+    margin: 14px 0;
+    font-size: 1.1em;
+    overflow-x: auto;
+  }
+  .math-inline { font-size: 0.95em; }
+
+  /* Calculation steps */
+  .calc-steps {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 18px 22px;
+    border-radius: 6px;
+    margin: 12px 0;
+    line-height: 1.8;
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+  .calc-steps .comment { color: #75715e; }
+  .calc-steps .result { color: #a6e22e; font-weight: 600; }
+  .calc-steps .label { color: #66d9ef; }
+  .calc-steps .val { color: #fd971f; }
+
+  /* Grid layout */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  @media (max-width: 700px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .toc { columns: 1; }
+    .container { padding: 12px 16px 40px; }
+    header h1 { font-size: 1.6em; }
+  }
+
+  /* Highlight spans */
+  .hl-tp { color: var(--tp); font-weight: 600; }
+  .hl-tn { color: var(--tn); font-weight: 600; }
+  .hl-fp { color: var(--fp); font-weight: 600; }
+  .hl-fn { color: var(--fn); font-weight: 600; }
+  .bold { font-weight: 700; }
+  
+  strong { font-weight: 600; }
+  
+  .when-use {
+    display: inline-block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78em;
+    background: #eee;
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 2px 3px;
+    color: #555;
+  }
+  .when-use.good { background: #d5f5e3; color: #1e8449; }
+  .when-use.bad { background: #fadbd8; color: #922b21; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 30px 0;
+    border-top: 2px solid var(--border);
+    margin-top: 40px;
+    color: var(--muted);
+    font-size: 0.85em;
+  }
+
+  .separator {
+    text-align: center;
+    margin: 30px 0;
+    color: var(--border);
+    font-size: 1.4em;
+    letter-spacing: 8px;
+  }
+
+  ul, ol { margin: 8px 0 12px 24px; }
+  li { margin-bottom: 4px; }
+  /* ===== Interactive Calculator ===== */
+  .calc-panel {
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 20px 0;
+    color: #e0e0e0;
+  }
+  .calc-panel h3 {
+    color: #64ffda;
+    font-family: 'DM Sans', sans-serif;
+    margin: 0 0 20px;
+    font-size: 1.2em;
+  }
+  .cm-input-grid {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 0;
+    max-width: 420px;
+    margin: 0 auto 24px;
+  }
+  .cm-input-grid .cm-corner-label {
+    background: #2c3e50;
+    color: #95a5a6;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid #34495e;
+    text-align: center;
+  }
+  .cm-input-grid .cm-header {
+    background: #34495e;
+    color: #ecf0f1;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.85em;
+    text-align: center;
+    padding: 10px 8px;
+    border: 1px solid #4a6274;
+  }
+  .cm-input-grid .cm-row-label {
+    background: #34495e;
+    color: #ecf0f1;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.82em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border: 1px solid #4a6274;
+    text-align: center;
+  }
+  .cm-input-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border: 1px solid #3a3a5c;
+    gap: 4px;
+  }
+  .cm-input-cell label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7em;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .cm-input-cell.cell-tp { background: rgba(39,174,96,0.15); }
+  .cm-input-cell.cell-tp label { color: #2ecc71; }
+  .cm-input-cell.cell-fn { background: rgba(192,57,43,0.15); }
+  .cm-input-cell.cell-fn label { color: #e74c3c; }
+  .cm-input-cell.cell-fp { background: rgba(230,126,34,0.15); }
+  .cm-input-cell.cell-fp label { color: #e67e22; }
+  .cm-input-cell.cell-tn { background: rgba(41,128,185,0.15); }
+  .cm-input-cell.cell-tn label { color: #3498db; }
+  .cm-input-cell input {
+    width: 72px;
+    padding: 8px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2em;
+    font-weight: 600;
+    border: 2px solid #3a3a5c;
+    border-radius: 6px;
+    background: #0d1117;
+    color: #f0f0f0;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .cm-input-cell input:focus { border-color: #64ffda; }
+  .cm-input-cell input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .cm-input-cell input { -moz-appearance: textfield; }
+
+  .preset-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .preset-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78em;
+    padding: 6px 14px;
+    border: 1px solid #3a3a5c;
+    border-radius: 20px;
+    background: transparent;
+    color: #a0a0c0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .preset-btn:hover, .preset-btn.active {
+    background: #64ffda;
+    color: #1a1a2e;
+    border-color: #64ffda;
+    font-weight: 600;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .result-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card:hover {
+    border-color: #64ffda;
+    background: rgba(100,255,218,0.04);
+    transform: translateY(-2px);
+  }
+  .result-card .rc-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #8888aa;
+    margin-bottom: 6px;
+  }
+  .result-card .rc-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6em;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+  .result-card .rc-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    color: #64ffda;
+    margin-left: 2px;
+  }
+  .result-card .rc-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68em;
+    color: #666688;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .result-card .rc-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #64ffda, #3498db);
+    transition: width 0.6s ease;
+    border-radius: 0 0 0 8px;
+  }
+  .result-card .rc-interp {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.8em;
+    color: #aaaacc;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .steps-panel {
+    background: #0d1117;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-top: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78em;
+    line-height: 2;
+    color: #c9d1d9;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  .steps-panel .s-label { color: #79c0ff; }
+  .steps-panel .s-val { color: #ffa657; }
+  .steps-panel .s-result { color: #7ee787; font-weight: 600; }
+  .steps-panel .s-comment { color: #6e7681; }
+  .steps-panel .s-section {
+    color: #d2a8ff;
+    font-weight: 600;
+    font-size: 1.05em;
+    display: block;
+    margin-top: 8px;
+  }
+
+  .beta-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 20px auto 0;
+    max-width: 500px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .beta-slider-row label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88em;
+    color: #aaa;
+  }
+  .beta-slider-row input[type=range] {
+    flex: 1;
+    min-width: 140px;
+    accent-color: #64ffda;
+    cursor: pointer;
+  }
+  .beta-slider-row .beta-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1em;
+    color: #64ffda;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+  }
+  .beta-slider-row .fb-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1em;
+    color: #ffa657;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #2a2a4a;
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82em;
+    padding: 8px 18px;
+    background: transparent;
+    color: #8888aa;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: #ccccee; }
+  .tab-btn.active {
+    color: #64ffda;
+    border-bottom-color: #64ffda;
+    font-weight: 600;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .totals-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 12px 0 0;
+    flex-wrap: wrap;
+  }
+  .total-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78em;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid #3a3a5c;
+    color: #aaa;
+  }
+  .total-chip span { color: #fff; font-weight: 600; }
+
+  @media (max-width: 700px) {
+    .calc-panel { padding: 18px 14px; }
+    .results-grid { grid-template-columns: 1fr 1fr; }
+    .result-card .rc-value { font-size: 1.3em; }
+    .cm-input-cell input { width: 56px; font-size: 1em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>Panduan Lengkap Metrik Evaluasi Model Klasifikasi</h1>
+  <div class="subtitle">Achmad Syahrul Choir (Politeknik Statistika STIS)</div>
+</header>
+
+<div class="toc">
+  <h3>Daftar Isi</h3>
+  <a href="#s1"><span class="num">01</span> Confusion Matrix</a>
+  <a href="#s2"><span class="num">02</span> Accuracy (Akurasi)</a>
+  <a href="#s3"><span class="num">03</span> Precision / PPV</a>
+  <a href="#s4"><span class="num">04</span> Recall / Sensitivity / TPR</a>
+  <a href="#s5"><span class="num">05</span> Specificity / TNR</a>
+  <a href="#s6"><span class="num">06</span> NPV (Negative Predictive Value)</a>
+  <a href="#s7"><span class="num">07</span> F1-Score</a>
+  <a href="#s8"><span class="num">08</span> Fβ-Score (F2, F0.5, dll)</a>
+  <a href="#s9"><span class="num">09</span> Cohen's Kappa (κ)</a>
+  <a href="#s10"><span class="num">10</span> AUC-ROC</a>
+  <a href="#s11"><span class="num">11</span> Ringkasan & Rekomendasi</a>
+  <a href="#s12"><span class="num">12</span> Contoh Penghitungan Lengkap</a>
+  <a href="#s13"><span class="num">13</span> Multiclass Extension</a>
+  <a href="#s14"><span class="num">14</span> Kalkulator Interaktif</a>
+</div>
+
+<div class="section" id="s1">
+<h2>1. Confusion Matrix (Matriks Konfusi)</h2>
+
+<p>Confusion matrix adalah tabel <strong>2×2</strong> (untuk kasus biner) yang merangkum hasil prediksi model terhadap nilai aktual. Ini adalah <em>fondasi</em> dari semua metrik evaluasi klasifikasi.</p>
+
+<div class="cm-wrapper">
+<table class="cm-table">
+  <tr>
+    <td class="corner" rowspan="2" colspan="2">Confusion<br>Matrix</td>
+    <th colspan="2">Prediksi Model</th>
+  </tr>
+  <tr>
+    <th>Positif (+)</th>
+    <th>Negatif (−)</th>
+  </tr>
+  <tr>
+    <td class="label-row" rowspan="2" style="writing-mode: vertical-rl; transform: rotate(180deg);">Aktual</td>
+    <td class="label-row">Positif (+)</td>
+    <td class="cm-tp">TP<br><small>True Positive</small></td>
+    <td class="cm-fn">FN<br><small>False Negative</small><br><small>(Type II Error)</small></td>
+  </tr>
+  <tr>
+    <td class="label-row">Negatif (−)</td>
+    <td class="cm-fp">FP<br><small>False Positive</small><br><small>(Type I Error)</small></td>
+    <td class="cm-tn">TN<br><small>True Negative</small></td>
+  </tr>
+</table>
+</div>
+
+<h3>Penjelasan Tiap Sel</h3>
+
+<div class="grid-2">
+  <div class="card" style="border-left: 4px solid var(--tp);">
+    <div class="card-label" style="color: var(--tp);">TRUE POSITIVE (TP)</div>
+    <p>Aktual Positif, diprediksi Positif. <strong>Model benar</strong> mendeteksi kasus positif.</p>
+    <p><em>Contoh:</em> Pasien sakit → model prediksi "sakit" ✓</p>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--tn);">
+    <div class="card-label" style="color: var(--tn);">TRUE NEGATIVE (TN)</div>
+    <p>Aktual Negatif, diprediksi Negatif. <strong>Model benar</strong> mendeteksi kasus negatif.</p>
+    <p><em>Contoh:</em> Pasien sehat → model prediksi "sehat" ✓</p>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--fp);">
+    <div class="card-label" style="color: var(--fp);">FALSE POSITIVE (FP) — Error Tipe I</div>
+    <p>Aktual Negatif, diprediksi Positif. Model <strong>salah</strong> memberikan alarm.</p>
+    <p><em>Contoh:</em> Pasien sehat → model prediksi "sakit" ✗ (False Alarm)</p>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--fn);">
+    <div class="card-label" style="color: var(--fn);">FALSE NEGATIVE (FN) — Error Tipe II</div>
+    <p>Aktual Positif, diprediksi Negatif. Model <strong>gagal</strong> mendeteksi kasus positif.</p>
+    <p><em>Contoh:</em> Pasien sakit → model prediksi "sehat" ✗ (Missed Detection)</p>
+  </div>
+</div>
+
+<div class="card warning">
+  <div class="card-label">Penting</div>
+  <p><strong>Total observasi</strong> = TP + TN + FP + FN = N<br>
+  <strong>Total aktual positif</strong> = TP + FN = P<br>
+  <strong>Total aktual negatif</strong> = FP + TN = N<sub>neg</sub><br>
+  <strong>Total prediksi positif</strong> = TP + FP<br>
+  <strong>Total prediksi negatif</strong> = FN + TN</p>
+</div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s2">
+<h2>2. Accuracy (Akurasi)</h2>
+
+<p>Akurasi mengukur <strong>proporsi prediksi yang benar</strong> dari seluruh prediksi.</p>
+
+<div class="card formula">
+  <div class="card-label">Rumus</div>
+  <div class="math-block">$$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN} = \frac{\text{Prediksi Benar}}{\text{Total Observasi}}$$</div>
+</div>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Data seimbang (balanced)</span>
+<span class="when-use good">✓ Baseline cepat</span>
+<span class="when-use good">✓ Semua kelas sama penting</span></p>
+
+<h4>Kapan TIDAK Cocok?</h4>
+<p><span class="when-use bad">✗ Data imbalanced</span>
+<span class="when-use bad">✗ Biaya kesalahan tidak sama</span></p>
+
+<div class="card warning">
+  <div class="card-label">Paradoks Akurasi</div>
+  <p>Pada data <strong>imbalanced</strong> (misal: 95% negatif, 5% positif), model yang selalu prediksi "negatif" mendapat akurasi 95%, padahal tidak berguna sama sekali! Ini disebut <em>Accuracy Paradox</em>.</p>
+</div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s3">
+<h2>3. Precision (Presisi) = PPV (Positive Predictive Value)</h2>
+
+<p>Precision mengukur: <strong>"Dari semua yang diprediksi positif, berapa yang benar-benar positif?"</strong></p>
+
+<div class="card formula">
+  <div class="card-label">Rumus</div>
+  <div class="math-block">$$\text{Precision} = \text{PPV} = \frac{TP}{TP + FP}$$</div>
+  <p style="text-align:center; font-size:0.9em; color: var(--muted);">Dihitung dari <strong>kolom prediksi positif</strong> pada confusion matrix.</p>
+</div>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Biaya False Positive tinggi</span>
+<span class="when-use good">✓ Spam detection (jangan sampai email penting masuk spam)</span>
+<span class="when-use good">✓ Rekomendasi produk (relevansi penting)</span></p>
+
+<div class="card tip">
+  <div class="card-label">Intuisi</div>
+  <p>Precision tinggi = model <strong>jarang salah alarm</strong>. Jika model bilang "positif", kita bisa <em>percaya</em>.</p>
+</div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s4">
+<h2>4. Recall = Sensitivity = TPR (True Positive Rate)</h2>
+
+<p>Recall mengukur: <strong>"Dari semua yang benar-benar positif, berapa yang berhasil ditangkap model?"</strong></p>
+
+<div class="card formula">
+  <div class="card-label">Rumus</div>
+  <div class="math-block">$$\text{Recall} = \text{Sensitivity} = \text{TPR} = \frac{TP}{TP + FN}$$</div>
+  <p style="text-align:center; font-size:0.9em; color: var(--muted);">Dihitung dari <strong>baris aktual positif</strong> pada confusion matrix.</p>
+</div>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Biaya False Negative tinggi</span>
+<span class="when-use good">✓ Deteksi penyakit (jangan sampai pasien sakit lolos)</span>
+<span class="when-use good">✓ Fraud detection (jangan sampai fraud tidak terdeteksi)</span>
+<span class="when-use good">✓ Deteksi stunting, kemiskinan</span></p>
+
+<div class="card tip">
+  <div class="card-label">Intuisi</div>
+  <p>Recall tinggi = model <strong>jarang melewatkan</strong> kasus positif yang sebenarnya. Model sensitif terhadap kelas positif.</p>
+</div>
+
+<div class="card warning">
+  <div class="card-label">Trade-off Precision vs Recall</div>
+  <p>Precision dan Recall bersifat <strong>trade-off</strong>: menaikkan satu biasanya menurunkan yang lain. Menurunkan threshold prediksi → lebih banyak prediksi positif → Recall naik, tapi Precision turun (lebih banyak false alarm). Ini yang disebut <em>Precision-Recall Trade-off</em>.</p>
+</div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s5">
+<h2>5. Specificity = TNR (True Negative Rate)</h2>
+
+<p>Specificity mengukur: <strong>"Dari semua yang benar-benar negatif, berapa yang berhasil diidentifikasi model sebagai negatif?"</strong></p>
+
+<div class="card formula">
+  <div class="card-label">Rumus</div>
+  <div class="math-block">$$\text{Specificity} = \text{TNR} = \frac{TN}{TN + FP}$$</div>
+  <p style="text-align:center; font-size:0.9em; color: var(--muted);">Dihitung dari <strong>baris aktual negatif</strong> pada confusion matrix.</p>
+</div>
+
+<h4>Hubungan dengan Sensitivity</h4>
+<div class="card formula">
+  <div class="card-label">False Positive Rate</div>
+  <div class="math-block">$$\text{FPR} = 1 - \text{Specificity} = \frac{FP}{TN + FP}$$</div>
+  <p>FPR digunakan sebagai sumbu-x pada kurva ROC.</p>
+</div>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Tes medis (pastikan orang sehat tidak salah didiagnosis)</span>
+<span class="when-use good">✓ Penting saat False Positive mahal/berbahaya</span>
+<span class="when-use good">✓ Berpasangan dengan Sensitivity dalam analisis diagnostik</span></p>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s6">
+<h2>6. NPV (Negative Predictive Value)</h2>
+
+<p>NPV mengukur: <strong>"Dari semua yang diprediksi negatif, berapa yang benar-benar negatif?"</strong></p>
+
+<div class="card formula">
+  <div class="card-label">Rumus</div>
+  <div class="math-block">$$\text{NPV} = \frac{TN}{TN + FN}$$</div>
+  <p style="text-align:center; font-size:0.9em; color: var(--muted);">Dihitung dari <strong>kolom prediksi negatif</strong> pada confusion matrix.</p>
+</div>
+
+<h4>Hubungan PPV & NPV</h4>
+<div class="card formula">
+  <div class="card-label">Empat Perspektif Confusion Matrix</div>
+  <table class="metric-table" style="font-size:0.85em;">
+    <tr><th>Perspektif</th><th>Metrik</th><th>Dihitung dari</th></tr>
+    <tr><td>Baris aktual positif</td><td><strong>Sensitivity/Recall</strong> = TP/(TP+FN)</td><td>→ baris atas</td></tr>
+    <tr><td>Baris aktual negatif</td><td><strong>Specificity</strong> = TN/(TN+FP)</td><td>→ baris bawah</td></tr>
+    <tr><td>Kolom prediksi positif</td><td><strong>Precision/PPV</strong> = TP/(TP+FP)</td><td>→ kolom kiri</td></tr>
+    <tr><td>Kolom prediksi negatif</td><td><strong>NPV</strong> = TN/(TN+FN)</td><td>→ kolom kanan</td></tr>
+  </table>
+</div>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Penting untuk menilai keandalan hasil negatif</span>
+<span class="when-use good">✓ Skrining medis (jika hasil negatif, seberapa yakin benar-benar negatif?)</span></p>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s7">
+<h2>7. F1-Score</h2>
+
+<p>F1-Score adalah <strong>harmonic mean</strong> dari Precision dan Recall. Memberikan satu angka yang menyeimbangkan keduanya.</p>
+
+<div class="card formula">
+  <div class="card-label">Rumus</div>
+  <div class="math-block">$$F_1 = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2 \, TP}{2 \, TP + FP + FN}$$</div>
+</div>
+
+<h4>Mengapa Harmonic Mean?</h4>
+<p>Harmonic mean memberikan bobot lebih besar pada nilai yang <em>lebih kecil</em>. Jadi F1 akan rendah jika salah satu dari Precision atau Recall rendah, meskipun yang lain tinggi. Ini berbeda dari arithmetic mean yang bisa "menyembunyikan" nilai rendah.</p>
+
+<div class="card example">
+  <div class="card-label">Perbandingan</div>
+  <p>Misal Precision = 0.9, Recall = 0.1:<br>
+  Arithmetic mean = (0.9 + 0.1)/2 = <strong>0.50</strong> (terlihat OK)<br>
+  Harmonic mean (F1) = 2×0.9×0.1/(0.9+0.1) = <strong>0.18</strong> (terlihat buruk → lebih jujur!)</p>
+</div>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Data imbalanced</span>
+<span class="when-use good">✓ Precision & Recall sama penting</span>
+<span class="when-use good">✓ Metrik tunggal untuk model comparison</span>
+<span class="when-use good">✓ Information retrieval, NLP, klasifikasi teks</span></p>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s8">
+<h2>8. Fβ-Score (Generalisasi F-Measure)</h2>
+
+<p>Fβ-Score adalah generalisasi F1-Score di mana <strong>β</strong> mengontrol bobot relatif antara Recall dan Precision.</p>
+
+<div class="card formula">
+  <div class="card-label">Rumus Umum</div>
+  <div class="math-block">$$F_\beta = (1 + \beta^2) \times \frac{\text{Precision} \times \text{Recall}}{(\beta^2 \times \text{Precision}) + \text{Recall}}$$</div>
+  <p style="text-align:center; font-size:0.9em;">β > 1 → lebih mementingkan <strong>Recall</strong> | β < 1 → lebih mementingkan <strong>Precision</strong></p>
+</div>
+
+<div class="grid-2">
+  <div class="card" style="border-left: 4px solid var(--accent3);">
+    <h4 style="margin-top:0;">F2-Score (β = 2)</h4>
+    <div class="math-block" style="font-size:0.95em;">$$F_2 = 5 \times \frac{P \times R}{4P + R}$$</div>
+    <p>Recall <strong>4× lebih penting</strong> dari Precision.</p>
+    <p><span class="when-use good">✓ Deteksi penyakit</span>
+    <span class="when-use good">✓ Fraud detection</span>
+    <span class="when-use good">✓ Deteksi stunting</span></p>
+    <p><em>Kasus:</em> Lebih baik ada false alarm daripada melewatkan kasus berbahaya.</p>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent2);">
+    <h4 style="margin-top:0;">F0.5-Score (β = 0.5)</h4>
+    <div class="math-block" style="font-size:0.95em;">$$F_{0.5} = 1.25 \times \frac{P \times R}{0.25P + R}$$</div>
+    <p>Precision <strong>4× lebih penting</strong> dari Recall.</p>
+    <p><span class="when-use good">✓ Spam filter</span>
+    <span class="when-use good">✓ Rekomendasi konten</span>
+    <span class="when-use good">✓ Automated trading</span></p>
+    <p><em>Kasus:</em> False alarm sangat mahal; lebih baik melewatkan beberapa positif.</p>
+  </div>
+</div>
+
+<div class="card tip">
+  <div class="card-label">Cara Mengingat β</div>
+  <p><strong>β = 1</strong>: Precision = Recall (seimbang) → F1<br>
+  <strong>β = 2</strong>: Recall 4× lebih penting → F2 (ingat: β² = 4)<br>
+  <strong>β = 0.5</strong>: Precision 4× lebih penting → F0.5 (ingat: β² = 0.25)<br>
+  Secara umum, Recall mendapat bobot <strong>β²</strong> kali lebih besar dari Precision.</p>
+</div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s9">
+<h2>9. Cohen's Kappa (κ)</h2>
+
+<p>Cohen's Kappa mengukur <strong>kesepakatan antara prediksi dan aktual dengan mengoreksi kesepakatan karena kebetulan (chance agreement)</strong>. Ini mengatasi kelemahan akurasi pada data imbalanced.</p>
+
+<div class="card formula">
+  <div class="card-label">Rumus</div>
+  <div class="math-block">$$\kappa = \frac{p_o - p_e}{1 - p_e}$$</div>
+  <p>di mana:<br>
+  <strong>p<sub>o</sub></strong> = observed agreement = <strong>Accuracy</strong> = (TP+TN)/N<br>
+  <strong>p<sub>e</sub></strong> = expected agreement by chance</p>
+  <div class="math-block" style="font-size:0.95em;">$$p_e = \frac{(\text{Aktual Pos} \times \text{Pred Pos}) + (\text{Aktual Neg} \times \text{Pred Neg})}{N^2}$$</div>
+  <p style="font-size:0.9em;">$$p_e = \frac{(TP+FN)(TP+FP) + (FP+TN)(FN+TN)}{N^2}$$</p>
+</div>
+
+<h4>Interpretasi Nilai Kappa</h4>
+<table class="metric-table" style="max-width: 500px;">
+  <tr><th>Rentang κ</th><th>Interpretasi</th></tr>
+  <tr><td>< 0.00</td><td>Kurang dari chance (lebih buruk dari random)</td></tr>
+  <tr><td>0.00 – 0.20</td><td>Slight agreement (sangat lemah)</td></tr>
+  <tr><td>0.21 – 0.40</td><td>Fair agreement (cukup)</td></tr>
+  <tr><td>0.41 – 0.60</td><td>Moderate agreement (sedang)</td></tr>
+  <tr><td>0.61 – 0.80</td><td>Substantial agreement (kuat)</td></tr>
+  <tr><td>0.81 – 1.00</td><td>Almost perfect agreement (hampir sempurna)</td></tr>
+</table>
+<p style="font-size:0.85em; color: var(--muted);">Sumber: Landis & Koch (1977)</p>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Data imbalanced (mengoreksi efek chance)</span>
+<span class="when-use good">✓ Membandingkan model yang berbeda pada data yang sama</span>
+<span class="when-use good">✓ Multiclass classification</span>
+<span class="when-use good">✓ Laporan riset yang memerlukan metrik robust</span></p>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s10">
+<h2>10. AUC-ROC (Area Under the ROC Curve)</h2>
+
+<h3>Kurva ROC</h3>
+<p>ROC (Receiver Operating Characteristic) adalah plot <strong>TPR (Sensitivity)</strong> vs <strong>FPR (1 − Specificity)</strong> pada berbagai threshold klasifikasi.</p>
+
+<div class="card formula">
+  <div class="card-label">Sumbu Kurva ROC</div>
+  <div class="math-block">$$\text{Sumbu-Y:  TPR (Recall)} = \frac{TP}{TP+FN} \qquad \text{Sumbu-X:  FPR} = \frac{FP}{FP+TN} = 1 - \text{Specificity}$$</div>
+</div>
+
+<h3>AUC (Area Under the Curve)</h3>
+<p>AUC = luas di bawah kurva ROC. Mengukur kemampuan model <strong>membedakan kelas positif dan negatif di seluruh threshold</strong>.</p>
+
+<h4>Interpretasi AUC</h4>
+<table class="metric-table" style="max-width: 500px;">
+  <tr><th>AUC</th><th>Interpretasi</th></tr>
+  <tr><td>0.50</td><td>Sama dengan random guessing (garis diagonal)</td></tr>
+  <tr><td>0.50 – 0.60</td><td>Gagal / tidak berguna</td></tr>
+  <tr><td>0.60 – 0.70</td><td>Lemah (poor)</td></tr>
+  <tr><td>0.70 – 0.80</td><td>Cukup (fair/acceptable)</td></tr>
+  <tr><td>0.80 – 0.90</td><td>Baik (good)</td></tr>
+  <tr><td>0.90 – 1.00</td><td>Sangat baik / excellent</td></tr>
+  <tr><td>1.00</td><td>Klasifikasi sempurna</td></tr>
+</table>
+
+<div class="card formula">
+  <div class="card-label">Penghitungan AUC secara manual (Trapezoid Rule)</div>
+  <p>Untuk data diskrit (beberapa threshold), AUC dihitung dengan <strong>aturan trapesium</strong>:</p>
+  <div class="math-block" style="font-size:0.95em;">$$\text{AUC} = \sum_{i=1}^{n-1} \frac{(FPR_{i+1} - FPR_i) \times (TPR_{i+1} + TPR_i)}{2}$$</div>
+  <p>Urutkan titik-titik (FPR, TPR) dari threshold tertinggi ke terendah, lalu jumlahkan luas trapesium.</p>
+</div>
+
+<div class="card tip">
+  <div class="card-label">Interpretasi Probabilistik AUC</div>
+  <p>AUC = probabilitas bahwa model memberikan <strong>skor lebih tinggi</strong> pada observasi positif yang dipilih secara acak dibandingkan observasi negatif yang dipilih secara acak.</p>
+  <p>AUC = 0.85 berarti: jika kita ambil 1 pasien sakit dan 1 pasien sehat secara acak, ada <strong>85% kemungkinan</strong> model memberikan skor risiko lebih tinggi pada pasien sakit.</p>
+</div>
+
+<h4>Kapan Digunakan?</h4>
+<p><span class="when-use good">✓ Membandingkan model tanpa memilih threshold tertentu</span>
+<span class="when-use good">✓ Model menghasilkan probabilitas (bukan hanya label)</span>
+<span class="when-use good">✓ Standar dalam riset medis & kredit scoring</span></p>
+
+<div class="card warning">
+  <div class="card-label">Keterbatasan AUC-ROC</div>
+  <p>Pada data <strong>sangat imbalanced</strong>, AUC-ROC bisa memberikan gambaran terlalu optimis karena TN mendominasi. Dalam kasus ini, <strong>AUC-PR (Area Under Precision-Recall Curve)</strong> sering lebih informatif.</p>
+</div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s11">
+<h2>11. Ringkasan & Rekomendasi Penggunaan</h2>
+
+<table class="metric-table">
+  <tr>
+    <th style="width:18%;">Metrik</th>
+    <th style="width:25%;">Rumus</th>
+    <th style="width:22%;">Fokus Pada</th>
+    <th style="width:35%;">Gunakan Ketika</th>
+  </tr>
+  <tr>
+    <td><strong>Accuracy</strong></td>
+    <td>(TP+TN) / N</td>
+    <td>Keseluruhan benar</td>
+    <td>Data balanced, semua kelas sama penting</td>
+  </tr>
+  <tr>
+    <td><strong>Precision (PPV)</strong></td>
+    <td>TP / (TP+FP)</td>
+    <td>Keandalan prediksi positif</td>
+    <td>FP mahal: spam filter, rekomendasi</td>
+  </tr>
+  <tr>
+    <td><strong>Recall (Sensitivity, TPR)</strong></td>
+    <td>TP / (TP+FN)</td>
+    <td>Kemampuan menangkap positif</td>
+    <td>FN mahal: deteksi penyakit, fraud, stunting</td>
+  </tr>
+  <tr>
+    <td><strong>Specificity (TNR)</strong></td>
+    <td>TN / (TN+FP)</td>
+    <td>Kemampuan menangkap negatif</td>
+    <td>FP mahal dalam konteks negatif: tes medis konfirmasi</td>
+  </tr>
+  <tr>
+    <td><strong>NPV</strong></td>
+    <td>TN / (TN+FN)</td>
+    <td>Keandalan prediksi negatif</td>
+    <td>Keyakinan bahwa hasil negatif benar-benar negatif</td>
+  </tr>
+  <tr>
+    <td><strong>F1-Score</strong></td>
+    <td>2·P·R / (P+R)</td>
+    <td>Keseimbangan P & R</td>
+    <td>Data imbalanced, P & R sama penting</td>
+  </tr>
+  <tr>
+    <td><strong>F2-Score</strong></td>
+    <td>5·P·R / (4P+R)</td>
+    <td>Recall lebih penting</td>
+    <td>FN sangat mahal: screening medis, deteksi kriminal</td>
+  </tr>
+  <tr>
+    <td><strong>F0.5-Score</strong></td>
+    <td>1.25·P·R / (0.25P+R)</td>
+    <td>Precision lebih penting</td>
+    <td>FP sangat mahal: automated trading, legal recommendation</td>
+  </tr>
+  <tr>
+    <td><strong>Cohen's Kappa (κ)</strong></td>
+    <td>(p<sub>o</sub>−p<sub>e</sub>) / (1−p<sub>e</sub>)</td>
+    <td>Agreement terkoreksi chance</td>
+    <td>Data imbalanced, riset, perbandingan antar model</td>
+  </tr>
+  <tr>
+    <td><strong>AUC-ROC</strong></td>
+    <td>Area under ROC curve</td>
+    <td>Diskriminasi keseluruhan</td>
+    <td>Membandingkan model secara keseluruhan, tanpa pilih threshold</td>
+  </tr>
+</table>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s12">
+<h2>12. Contoh Penghitungan Manual Lengkap</h2>
+
+<h3>Kasus: Prediksi Stunting pada Balita</h3>
+<p>Sebuah model klasifikasi dibangun untuk mendeteksi stunting pada 200 balita. Hasilnya:</p>
+
+<div class="cm-wrapper">
+<table class="cm-table">
+  <tr>
+    <td class="corner" rowspan="2" colspan="2">n = 200</td>
+    <th colspan="2">Prediksi</th>
+    <th rowspan="2" style="background:#5d6d7e; color:white; vertical-align:middle;">Total</th>
+  </tr>
+  <tr>
+    <th>Stunting (+)</th>
+    <th>Normal (−)</th>
+  </tr>
+  <tr>
+    <td class="label-row" rowspan="2" style="writing-mode: vertical-rl; transform: rotate(180deg);">Aktual</td>
+    <td class="label-row">Stunting (+)</td>
+    <td class="cm-tp">TP = 45</td>
+    <td class="cm-fn">FN = 15</td>
+    <td style="background:#eee; font-weight:700;">60</td>
+  </tr>
+  <tr>
+    <td class="label-row">Normal (−)</td>
+    <td class="cm-fp">FP = 20</td>
+    <td class="cm-tn">TN = 120</td>
+    <td style="background:#eee; font-weight:700;">140</td>
+  </tr>
+  <tr>
+    <td class="label-row" colspan="2" style="background:#5d6d7e; text-align:right; padding-right:15px;">Total</td>
+    <td style="background:#eee; font-weight:700;">65</td>
+    <td style="background:#eee; font-weight:700;">135</td>
+    <td style="background:#ddd; font-weight:700;">200</td>
+  </tr>
+</table>
+</div>
+
+<p><strong>Data dasar:</strong> TP=45, TN=120, FP=20, FN=15, N=200, Aktual Positif (P)=60, Aktual Negatif=140</p>
+
+<h3>① Accuracy</h3>
+<div class="calc-steps"><span class="label">Accuracy</span> = (TP + TN) / N
+        = (<span class="val">45</span> + <span class="val">120</span>) / <span class="val">200</span>
+        = <span class="val">165</span> / <span class="val">200</span>
+        = <span class="result">0.825 = 82.5%</span></div>
+
+<h3>② Precision (PPV)</h3>
+<div class="calc-steps"><span class="label">Precision</span> = TP / (TP + FP)
+          = <span class="val">45</span> / (<span class="val">45</span> + <span class="val">20</span>)
+          = <span class="val">45</span> / <span class="val">65</span>
+          = <span class="result">0.6923 = 69.23%</span>
+
+<span class="comment">→ Dari 65 balita yang diprediksi stunting, 45 benar-benar stunting.</span></div>
+
+<h3>③ Recall (Sensitivity / TPR)</h3>
+<div class="calc-steps"><span class="label">Recall</span> = TP / (TP + FN)
+       = <span class="val">45</span> / (<span class="val">45</span> + <span class="val">15</span>)
+       = <span class="val">45</span> / <span class="val">60</span>
+       = <span class="result">0.7500 = 75.00%</span>
+
+<span class="comment">→ Dari 60 balita yang benar-benar stunting, model menangkap 45.</span>
+<span class="comment">→ 15 balita stunting TIDAK terdeteksi (lolos/missed).</span></div>
+
+<h3>④ Specificity (TNR)</h3>
+<div class="calc-steps"><span class="label">Specificity</span> = TN / (TN + FP)
+            = <span class="val">120</span> / (<span class="val">120</span> + <span class="val">20</span>)
+            = <span class="val">120</span> / <span class="val">140</span>
+            = <span class="result">0.8571 = 85.71%</span>
+
+<span class="comment">→ Dari 140 balita normal, model benar mengidentifikasi 120 sebagai normal.</span>
+
+<span class="label">FPR</span> = 1 - Specificity = 1 - 0.8571 = <span class="result">0.1429 = 14.29%</span></div>
+
+<h3>⑤ NPV (Negative Predictive Value)</h3>
+<div class="calc-steps"><span class="label">NPV</span> = TN / (TN + FN)
+    = <span class="val">120</span> / (<span class="val">120</span> + <span class="val">15</span>)
+    = <span class="val">120</span> / <span class="val">135</span>
+    = <span class="result">0.8889 = 88.89%</span>
+
+<span class="comment">→ Dari 135 yang diprediksi normal, 120 benar-benar normal.</span>
+<span class="comment">→ 15 sebenarnya stunting tapi diprediksi normal (bahaya!).</span></div>
+
+<h3>⑥ F1-Score</h3>
+<div class="calc-steps"><span class="label">F1</span> = 2 × Precision × Recall / (Precision + Recall)
+   = 2 × <span class="val">0.6923</span> × <span class="val">0.7500</span> / (<span class="val">0.6923</span> + <span class="val">0.7500</span>)
+   = 2 × <span class="val">0.5192</span> / <span class="val">1.4423</span>
+   = <span class="val">1.0385</span> / <span class="val">1.4423</span>
+   = <span class="result">0.7200 = 72.00%</span>
+
+<span class="comment">Cara alternatif:</span>
+<span class="label">F1</span> = 2×TP / (2×TP + FP + FN)
+   = 2×<span class="val">45</span> / (2×<span class="val">45</span> + <span class="val">20</span> + <span class="val">15</span>)
+   = <span class="val">90</span> / <span class="val">125</span>
+   = <span class="result">0.7200 = 72.00%</span>  ✓ sama</div>
+
+<h3>⑦ F2-Score</h3>
+<div class="calc-steps"><span class="label">F2</span> = (1 + 2²) × P × R / (2² × P + R)
+   = 5 × <span class="val">0.6923</span> × <span class="val">0.7500</span> / (4 × <span class="val">0.6923</span> + <span class="val">0.7500</span>)
+   = 5 × <span class="val">0.5192</span> / (<span class="val">2.7692</span> + <span class="val">0.7500</span>)
+   = <span class="val">2.5962</span> / <span class="val">3.5192</span>
+   = <span class="result">0.7377 = 73.77%</span>
+
+<span class="comment">→ F2 > F1 karena Recall (75%) > Precision (69.23%),</span>
+<span class="comment">  dan F2 memberi bobot lebih pada Recall.</span></div>
+
+<h3>⑧ F0.5-Score</h3>
+<div class="calc-steps"><span class="label">F0.5</span> = (1 + 0.5²) × P × R / (0.5² × P + R)
+     = 1.25 × <span class="val">0.6923</span> × <span class="val">0.7500</span> / (0.25 × <span class="val">0.6923</span> + <span class="val">0.7500</span>)
+     = 1.25 × <span class="val">0.5192</span> / (<span class="val">0.1731</span> + <span class="val">0.7500</span>)
+     = <span class="val">0.6490</span> / <span class="val">0.9231</span>
+     = <span class="result">0.7030 = 70.30%</span>
+
+<span class="comment">→ F0.5 < F1 karena Precision (69.23%) < Recall (75%),</span>
+<span class="comment">  dan F0.5 memberi bobot lebih pada Precision.</span></div>
+
+<h3>⑨ Cohen's Kappa (κ)</h3>
+<div class="calc-steps"><span class="comment">Langkah 1: Hitung p_o (observed agreement = accuracy)</span>
+<span class="label">p_o</span> = (TP + TN) / N = (<span class="val">45</span> + <span class="val">120</span>) / <span class="val">200</span> = <span class="val">0.825</span>
+
+<span class="comment">Langkah 2: Hitung p_e (expected agreement by chance)</span>
+<span class="comment">  p_e = (Aktual_Pos × Pred_Pos + Aktual_Neg × Pred_Neg) / N²</span>
+<span class="label">Aktual Pos</span> = TP + FN = <span class="val">60</span>
+<span class="label">Aktual Neg</span> = FP + TN = <span class="val">140</span>
+<span class="label">Pred Pos</span>  = TP + FP = <span class="val">65</span>
+<span class="label">Pred Neg</span>  = FN + TN = <span class="val">135</span>
+
+<span class="label">p_e</span> = (<span class="val">60</span> × <span class="val">65</span> + <span class="val">140</span> × <span class="val">135</span>) / <span class="val">200</span>²
+    = (<span class="val">3900</span> + <span class="val">18900</span>) / <span class="val">40000</span>
+    = <span class="val">22800</span> / <span class="val">40000</span>
+    = <span class="val">0.5700</span>
+
+<span class="comment">Langkah 3: Hitung Kappa</span>
+<span class="label">κ</span> = (p_o - p_e) / (1 - p_e)
+  = (<span class="val">0.825</span> - <span class="val">0.570</span>) / (1 - <span class="val">0.570</span>)
+  = <span class="val">0.255</span> / <span class="val">0.430</span>
+  = <span class="result">0.5930</span>
+
+<span class="comment">→ Interpretasi: κ = 0.59 → Moderate agreement (Landis & Koch)</span>
+<span class="comment">→ Model cukup baik, tapi belum substansial.</span>
+<span class="comment">→ Akurasi 82.5% agak "dibesar-besarkan" karena data imbalanced</span>
+<span class="comment">  (70% kelas negatif). Kappa mengoreksi ini.</span></div>
+
+<h3>⑩ AUC-ROC (Contoh Sederhana)</h3>
+
+<p>Misalkan model menghasilkan probabilitas prediksi, dan kita hitung TPR & FPR pada 5 threshold:</p>
+
+<div class="card example">
+  <div class="card-label">Data Threshold</div>
+  <table class="metric-table" style="font-size:0.85em;">
+    <tr><th>Threshold</th><th>TP</th><th>FP</th><th>FN</th><th>TN</th><th>TPR (Recall)</th><th>FPR (1−Spec)</th></tr>
+    <tr><td>1.0 (semua negatif)</td><td>0</td><td>0</td><td>60</td><td>140</td><td>0.000</td><td>0.000</td></tr>
+    <tr><td>0.7</td><td>30</td><td>10</td><td>30</td><td>130</td><td>0.500</td><td>0.071</td></tr>
+    <tr><td>0.5 (model kita)</td><td>45</td><td>20</td><td>15</td><td>120</td><td>0.750</td><td>0.143</td></tr>
+    <tr><td>0.3</td><td>55</td><td>50</td><td>5</td><td>90</td><td>0.917</td><td>0.357</td></tr>
+    <tr><td>0.0 (semua positif)</td><td>60</td><td>140</td><td>0</td><td>0</td><td>1.000</td><td>1.000</td></tr>
+  </table>
+</div>
+
+<div class="calc-steps"><span class="comment">AUC via Trapezoid Rule:</span>
+<span class="comment">Titik-titik (FPR, TPR): (0, 0), (0.071, 0.5), (0.143, 0.75), (0.357, 0.917), (1, 1)</span>
+
+<span class="label">Trapesium 1:</span> ½ × (0.071 - 0.000) × (0.500 + 0.000) = ½ × 0.071 × 0.500 = <span class="val">0.01775</span>
+<span class="label">Trapesium 2:</span> ½ × (0.143 - 0.071) × (0.750 + 0.500) = ½ × 0.072 × 1.250 = <span class="val">0.04500</span>
+<span class="label">Trapesium 3:</span> ½ × (0.357 - 0.143) × (0.917 + 0.750) = ½ × 0.214 × 1.667 = <span class="val">0.17837</span>
+<span class="label">Trapesium 4:</span> ½ × (1.000 - 0.357) × (1.000 + 0.917) = ½ × 0.643 × 1.917 = <span class="val">0.61631</span>
+
+<span class="label">AUC</span> = 0.01775 + 0.04500 + 0.17837 + 0.61631
+    = <span class="result">0.8574 ≈ 0.86</span>
+
+<span class="comment">→ Interpretasi: AUC = 0.86 → Good discrimination.</span>
+<span class="comment">→ Model memiliki 86% kemungkinan memberikan skor lebih tinggi</span>
+<span class="comment">  pada balita stunting dibanding balita normal.</span></div>
+
+<h3>Ringkasan Semua Metrik — Kasus Stunting</h3>
+
+<div class="card" style="border-left: 4px solid #8e44ad; background: #f8f0fc;">
+  <div class="card-label" style="color: #8e44ad;">Hasil Lengkap</div>
+  <table class="metric-table" style="font-size:0.9em;">
+    <tr><th>Metrik</th><th>Nilai</th><th>Interpretasi untuk Kasus Stunting</th></tr>
+    <tr><td>Accuracy</td><td><strong>82.50%</strong></td><td>Terlihat bagus, tapi bisa menyesatkan (data 70% negatif)</td></tr>
+    <tr><td>Precision (PPV)</td><td><strong>69.23%</strong></td><td>Dari yang diprediksi stunting, ~31% sebenarnya normal (false alarm)</td></tr>
+    <tr><td>Recall (Sensitivity)</td><td><strong>75.00%</strong></td><td>Masih ada 25% balita stunting yang tidak terdeteksi → perlu perbaikan</td></tr>
+    <tr><td>Specificity</td><td><strong>85.71%</strong></td><td>Cukup baik mengidentifikasi balita normal</td></tr>
+    <tr><td>NPV</td><td><strong>88.89%</strong></td><td>Jika diprediksi normal, 89% kemungkinan benar normal</td></tr>
+    <tr><td>F1-Score</td><td><strong>72.00%</strong></td><td>Keseimbangan P & R → moderate, perlu perbaikan</td></tr>
+    <tr><td>F2-Score</td><td><strong>73.77%</strong></td><td>Lebih relevan untuk kasus ini karena missed stunting lebih berbahaya</td></tr>
+    <tr><td>F0.5-Score</td><td><strong>70.30%</strong></td><td>Kurang relevan untuk kasus ini (precision less critical)</td></tr>
+    <tr><td>Cohen's Kappa</td><td><strong>0.593</strong></td><td>Moderate agreement — lebih jujur dari akurasi</td></tr>
+    <tr><td>AUC-ROC</td><td><strong>0.86</strong></td><td>Good discrimination — model punya kemampuan pembedaan baik</td></tr>
+  </table>
+</div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s13">
+<h2>13. Ekstensi ke Multiclass</h2>
+
+<p>Untuk klasifikasi dengan <strong>K > 2 kelas</strong>, confusion matrix menjadi <strong>K × K</strong>, dan metrik dihitung dengan salah satu strategi:</p>
+
+<h3>Strategi Averaging</h3>
+
+<div class="grid-2">
+  <div class="card formula">
+    <h4 style="margin-top:0;">Macro Average</h4>
+    <div class="math-block" style="font-size:0.9em;">$$\text{Macro-F1} = \frac{1}{K} \sum_{k=1}^{K} F1_k$$</div>
+    <p>Hitung metrik per kelas, lalu rata-rata. <strong>Setiap kelas sama penting</strong> tanpa memperhatikan jumlah observasi.</p>
+    <p><span class="when-use good">✓ Semua kelas sama penting</span></p>
+  </div>
+  <div class="card formula">
+    <h4 style="margin-top:0;">Weighted Average</h4>
+    <div class="math-block" style="font-size:0.9em;">$$\text{Weighted-F1} = \sum_{k=1}^{K} \frac{n_k}{N} \times F1_k$$</div>
+    <p>Hitung metrik per kelas, lalu rata-rata <strong>berbobot jumlah observasi</strong> per kelas.</p>
+    <p><span class="when-use good">✓ Data imbalanced</span></p>
+  </div>
+</div>
+
+<div class="card formula">
+  <h4 style="margin-top:0;">Micro Average</h4>
+  <div class="math-block" style="font-size:0.9em;">$$\text{Micro-F1} = \frac{2 \sum_k TP_k}{2 \sum_k TP_k + \sum_k FP_k + \sum_k FN_k}$$</div>
+  <p>Mengumpulkan semua TP, FP, FN global lalu hitung. Micro-Precision = Micro-Recall = Micro-F1 = <strong>Accuracy</strong> pada multiclass.</p>
+</div>
+
+<h3>Cohen's Kappa untuk Multiclass</h3>
+<p>Rumus sama persis. p<sub>o</sub> = akurasi keseluruhan, p<sub>e</sub> dihitung dari marginal total tiap kelas:</p>
+<div class="card formula">
+  <div class="math-block" style="font-size:0.9em;">$$p_e = \sum_{k=1}^{K} \frac{(\text{Total aktual kelas } k) \times (\text{Total prediksi kelas } k)}{N^2}$$</div>
+</div>
+
+<h3>AUC-ROC untuk Multiclass</h3>
+<p>Dihitung dengan strategi <strong>One-vs-Rest (OvR)</strong>: untuk tiap kelas k, hitung AUC seolah-olah biner (kelas k vs semua lainnya), lalu rata-rata (macro atau weighted).</p>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="s14">
+<h2>14. Kalkulator Interaktif — Hitung Semua Metrik</h2>
+
+<p>Masukkan nilai confusion matrix Anda di bawah ini. Semua metrik akan dihitung otomatis beserta langkah-langkah penghitungan manualnya.</p>
+
+<div class="calc-panel">
+
+  <div class="preset-row">
+    <span style="font-family:'DM Sans',sans-serif;font-size:0.78em;color:#666;margin-right:4px;">Contoh kasus:</span>
+    <button class="preset-btn active" onclick="setPreset(45,120,20,15,'stunting', this)">Stunting</button>
+    <button class="preset-btn" onclick="setPreset(80,850,50,20,'fraud', this)">Fraud Detection</button>
+    <button class="preset-btn" onclick="setPreset(90,85,15,10,'balanced', this)">Data Balanced</button>
+    <button class="preset-btn" onclick="setPreset(5,940,10,45,'imbalanced', this)">Sangat Imbalanced</button>
+    <button class="preset-btn" onclick="setPreset(30,60,40,70,'poor', this)">Model Buruk</button>
+  </div>
+
+  <h3 style="text-align:center;margin-bottom:14px;">Masukkan Confusion Matrix</h3>
+
+  <div class="cm-input-grid">
+    <div class="cm-corner-label">Aktual ↓<br>Prediksi →</div>
+    <div class="cm-header">Prediksi<br>Positif (+)</div>
+    <div class="cm-header">Prediksi<br>Negatif (−)</div>
+    <div class="cm-row-label">Aktual<br>Positif (+)</div>
+    <div class="cm-input-cell cell-tp">
+      <label>TP</label>
+      <input type="number" id="inp-tp" value="45" min="0" oninput="calculate()">
+    </div>
+    <div class="cm-input-cell cell-fn">
+      <label>FN</label>
+      <input type="number" id="inp-fn" value="15" min="0" oninput="calculate()">
+    </div>
+    <div class="cm-row-label">Aktual<br>Negatif (−)</div>
+    <div class="cm-input-cell cell-fp">
+      <label>FP</label>
+      <input type="number" id="inp-fp" value="20" min="0" oninput="calculate()">
+    </div>
+    <div class="cm-input-cell cell-tn">
+      <label>TN</label>
+      <input type="number" id="inp-tn" value="120" min="0" oninput="calculate()">
+    </div>
+  </div>
+
+  <div class="totals-row" id="totals-row"></div>
+
+  <div class="beta-slider-row">
+    <label>Nilai β untuk Fβ:</label>
+    <input type="range" id="beta-slider" min="0.1" max="5" step="0.1" value="1" oninput="calculate()">
+    <div class="beta-val" id="beta-display">β = 1.0</div>
+    <div class="fb-val" id="fb-display">Fβ = —</div>
+  </div>
+
+  <div class="tab-bar" style="margin-top:28px;">
+    <button class="tab-btn active" onclick="switchTab('tab-results',this)">Hasil Metrik</button>
+    <button class="tab-btn" onclick="switchTab('tab-steps',this)">Langkah Perhitungan</button>
+  </div>
+
+  <div class="tab-content active" id="tab-results">
+    <div class="results-grid" id="results-grid"></div>
+  </div>
+
+  <div class="tab-content" id="tab-steps">
+    <div class="steps-panel" id="steps-panel"></div>
+  </div>
+
+</div></div><footer>
+  <p><strong>Panduan Metrik Evaluasi Model Klasifikasi</strong><br>
+  Disusun sebagai pendamping tabel perbandingan model ML/DL<br>
+  Referensi: Hastie et al. (2009), Powers (2011), Sokolova & Lapalme (2009), Landis & Koch (1977)</p>
+</footer>
+
+</div><script>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+    calculate();
+  });
+
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function setPreset(tp, tn, fp, fn, name, btn) {
+    document.getElementById('inp-tp').value = tp;
+    document.getElementById('inp-tn').value = tn;
+    document.getElementById('inp-fp').value = fp;
+    document.getElementById('inp-fn').value = fn;
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    calculate();
+  }
+
+  function fmt(v, d) {
+    if (isNaN(v) || !isFinite(v)) return '—';
+    return v.toFixed(d || 4);
+  }
+  function pct(v) {
+    if (isNaN(v) || !isFinite(v)) return '—';
+    return (v * 100).toFixed(2) + '%';
+  }
+
+  function kappaInterp(k) {
+    if (k < 0) return 'Worse than chance';
+    if (k <= 0.20) return 'Slight agreement';
+    if (k <= 0.40) return 'Fair agreement';
+    if (k <= 0.60) return 'Moderate agreement';
+    if (k <= 0.80) return 'Substantial agreement';
+    return 'Almost perfect';
+  }
+
+  function calculate() {
+    const tp = parseInt(document.getElementById('inp-tp').value) || 0;
+    const tn = parseInt(document.getElementById('inp-tn').value) || 0;
+    const fp = parseInt(document.getElementById('inp-fp').value) || 0;
+    const fn = parseInt(document.getElementById('inp-fn').value) || 0;
+    const beta = parseFloat(document.getElementById('beta-slider').value) || 1;
+
+    const N = tp + tn + fp + fn;
+    const P = tp + fn;
+    const Nn = fp + tn;
+    const predP = tp + fp;
+    const predN = fn + tn;
+
+    // Metrics
+    const accuracy = N > 0 ? (tp + tn) / N : 0;
+    const precision = predP > 0 ? tp / predP : 0;
+    const recall = P > 0 ? tp / P : 0;
+    const specificity = Nn > 0 ? tn / Nn : 0;
+    const npv = predN > 0 ? tn / predN : 0;
+    const fpr = Nn > 0 ? fp / Nn : 0;
+    const fnr = P > 0 ? fn / P : 0;
+
+    const f1_denom = 2 * tp + fp + fn;
+    const f1 = f1_denom > 0 ? (2 * tp) / f1_denom : 0;
+
+    const b2 = beta * beta;
+    const fb_denom = b2 * precision + recall;
+    const fb = fb_denom > 0 ? (1 + b2) * precision * recall / fb_denom : 0;
+
+    const f2_denom = 4 * precision + recall;
+    const f2 = f2_denom > 0 ? 5 * precision * recall / f2_denom : 0;
+
+    const f05_denom = 0.25 * precision + recall;
+    const f05 = f05_denom > 0 ? 1.25 * precision * recall / f05_denom : 0;
+
+    // Kappa
+    const po = accuracy;
+    const pe = N > 0 ? (P * predP + Nn * predN) / (N * N) : 0;
+    const kappa = pe < 1 ? (po - pe) / (1 - pe) : 0;
+
+    // Totals row
+    document.getElementById('totals-row').innerHTML = `
+      <div class="total-chip">N = <span>${N}</span></div>
+      <div class="total-chip">Aktual+ = <span>${P}</span></div>
+      <div class="total-chip">Aktual− = <span>${Nn}</span></div>
+      <div class="total-chip">Pred+ = <span>${predP}</span></div>
+      <div class="total-chip">Pred− = <span>${predN}</span></div>
+      <div class="total-chip">Prevalensi = <span>${N > 0 ? pct(P/N) : '—'}</span></div>
+    `;
+
+    // Beta display
+    document.getElementById('beta-display').textContent = 'β = ' + beta.toFixed(1);
+    document.getElementById('fb-display').textContent = 'Fβ = ' + pct(fb);
+
+    // Results grid
+    const metrics = [
+      { name: 'Accuracy', val: accuracy, formula: `(${tp}+${tn})/${N}`, color: '#fff' },
+      { name: 'Precision (PPV)', val: precision, formula: `${tp}/(${tp}+${fp})`, color: '#2ecc71' },
+      { name: 'Recall (Sensitivity)', val: recall, formula: `${tp}/(${tp}+${fn})`, color: '#e74c3c' },
+      { name: 'Specificity (TNR)', val: specificity, formula: `${tn}/(${tn}+${fp})`, color: '#3498db' },
+      { name: 'NPV', val: npv, formula: `${tn}/(${tn}+${fn})`, color: '#9b59b6' },
+      { name: 'FPR (Type I Error Rate)', val: fpr, formula: `${fp}/(${fp}+${tn})`, color: '#e67e22' },
+      { name: 'FNR (Miss Rate)', val: fnr, formula: `${fn}/(${fn}+${tp})`, color: '#c0392b' },
+      { name: 'F1-Score', val: f1, formula: `2×${tp}/(2×${tp}+${fp}+${fn})`, color: '#f39c12' },
+      { name: 'F2-Score', val: f2, formula: `5×P×R/(4P+R)`, color: '#e67e22' },
+      { name: 'F0.5-Score', val: f05, formula: `1.25×P×R/(0.25P+R)`, color: '#1abc9c' },
+      { name: `Fβ (β=${beta.toFixed(1)})`, val: fb, formula: `(1+${fmt(b2,2)})×P×R/(${fmt(b2,2)}×P+R)`, color: '#64ffda' },
+      { name: "Cohen's Kappa (κ)", val: kappa, formula: `(${fmt(po,4)}−${fmt(pe,4)})/(1−${fmt(pe,4)})`, color: '#d2a8ff',
+        interp: kappaInterp(kappa) },
+    ];
+
+    let html = '';
+    metrics.forEach(m => {
+      const barW = Math.max(0, Math.min(100, (m.name.includes('FPR') || m.name.includes('FNR')) ? (1 - m.val) * 100 : m.val * 100));
+      html += `
+        <div class="result-card">
+          <div class="rc-name">${m.name}</div>
+          <div class="rc-value" style="color:${m.color}">${fmt(m.val, 4)}<span class="rc-pct"> (${pct(m.val)})</span></div>
+          <div class="rc-formula">${m.formula}</div>
+          ${m.interp ? `<div class="rc-interp">${m.interp}</div>` : ''}
+          <div class="rc-bar" style="width:${barW}%;"></div>
+        </div>`;
+    });
+    document.getElementById('results-grid').innerHTML = html;
+
+    // Steps panel
+    let s = '';
+    s += `<span class="s-section">═══ DATA DASAR ═══</span>`;
+    s += `<span class="s-label">TP</span> = <span class="s-val">${tp}</span>    <span class="s-label">FN</span> = <span class="s-val">${fn}</span>    <span class="s-label">FP</span> = <span class="s-val">${fp}</span>    <span class="s-label">TN</span> = <span class="s-val">${tn}</span>\n`;
+    s += `<span class="s-label">N</span>  = TP+TN+FP+FN = <span class="s-val">${tp}</span>+<span class="s-val">${tn}</span>+<span class="s-val">${fp}</span>+<span class="s-val">${fn}</span> = <span class="s-result">${N}</span>\n`;
+    s += `<span class="s-label">Aktual Positif (P)</span> = TP+FN = <span class="s-val">${tp}</span>+<span class="s-val">${fn}</span> = <span class="s-result">${P}</span>\n`;
+    s += `<span class="s-label">Aktual Negatif</span>    = FP+TN = <span class="s-val">${fp}</span>+<span class="s-val">${tn}</span> = <span class="s-result">${Nn}</span>\n`;
+    s += `<span class="s-label">Prediksi Positif</span>  = TP+FP = <span class="s-val">${tp}</span>+<span class="s-val">${fp}</span> = <span class="s-result">${predP}</span>\n`;
+    s += `<span class="s-label">Prediksi Negatif</span>  = FN+TN = <span class="s-val">${fn}</span>+<span class="s-val">${tn}</span> = <span class="s-result">${predN}</span>\n`;
+
+    s += `\n<span class="s-section">═══ ① ACCURACY ═══</span>`;
+    s += `<span class="s-label">Accuracy</span> = (TP + TN) / N\n`;
+    s += `         = (<span class="s-val">${tp}</span> + <span class="s-val">${tn}</span>) / <span class="s-val">${N}</span>\n`;
+    s += `         = <span class="s-val">${tp+tn}</span> / <span class="s-val">${N}</span>\n`;
+    s += `         = <span class="s-result">${fmt(accuracy)} = ${pct(accuracy)}</span>\n`;
+
+    s += `\n<span class="s-section">═══ ② PRECISION (PPV) ═══</span>`;
+    s += `<span class="s-label">Precision</span> = TP / (TP + FP)\n`;
+    s += `          = <span class="s-val">${tp}</span> / (<span class="s-val">${tp}</span> + <span class="s-val">${fp}</span>)\n`;
+    s += `          = <span class="s-val">${tp}</span> / <span class="s-val">${predP}</span>\n`;
+    s += `          = <span class="s-result">${fmt(precision)} = ${pct(precision)}</span>\n`;
+    s += `<span class="s-comment">→ Dari ${predP} yang diprediksi positif, ${tp} benar-benar positif.</span>\n`;
+
+    s += `\n<span class="s-section">═══ ③ RECALL (SENSITIVITY / TPR) ═══</span>`;
+    s += `<span class="s-label">Recall</span> = TP / (TP + FN)\n`;
+    s += `       = <span class="s-val">${tp}</span> / (<span class="s-val">${tp}</span> + <span class="s-val">${fn}</span>)\n`;
+    s += `       = <span class="s-val">${tp}</span> / <span class="s-val">${P}</span>\n`;
+    s += `       = <span class="s-result">${fmt(recall)} = ${pct(recall)}</span>\n`;
+    s += `<span class="s-comment">→ Dari ${P} yang benar-benar positif, ${tp} berhasil ditangkap. ${fn} terlewat.</span>\n`;
+
+    s += `\n<span class="s-section">═══ ④ SPECIFICITY (TNR) ═══</span>`;
+    s += `<span class="s-label">Specificity</span> = TN / (TN + FP)\n`;
+    s += `            = <span class="s-val">${tn}</span> / (<span class="s-val">${tn}</span> + <span class="s-val">${fp}</span>)\n`;
+    s += `            = <span class="s-val">${tn}</span> / <span class="s-val">${Nn}</span>\n`;
+    s += `            = <span class="s-result">${fmt(specificity)} = ${pct(specificity)}</span>\n`;
+    s += `\n<span class="s-label">FPR</span> = 1 - Specificity = 1 - <span class="s-val">${fmt(specificity)}</span> = <span class="s-result">${fmt(fpr)} = ${pct(fpr)}</span>\n`;
+
+    s += `\n<span class="s-section">═══ ⑤ NPV (Negative Predictive Value) ═══</span>`;
+    s += `<span class="s-label">NPV</span> = TN / (TN + FN)\n`;
+    s += `    = <span class="s-val">${tn}</span> / (<span class="s-val">${tn}</span> + <span class="s-val">${fn}</span>)\n`;
+    s += `    = <span class="s-val">${tn}</span> / <span class="s-val">${predN}</span>\n`;
+    s += `    = <span class="s-result">${fmt(npv)} = ${pct(npv)}</span>\n`;
+    s += `<span class="s-comment">→ Dari ${predN} yang diprediksi negatif, ${tn} benar-benar negatif.</span>\n`;
+
+    s += `\n<span class="s-section">═══ ⑥ F1-SCORE ═══</span>`;
+    s += `<span class="s-label">F1</span> = 2 × TP / (2×TP + FP + FN)\n`;
+    s += `   = 2 × <span class="s-val">${tp}</span> / (2×<span class="s-val">${tp}</span> + <span class="s-val">${fp}</span> + <span class="s-val">${fn}</span>)\n`;
+    s += `   = <span class="s-val">${2*tp}</span> / <span class="s-val">${f1_denom}</span>\n`;
+    s += `   = <span class="s-result">${fmt(f1)} = ${pct(f1)}</span>\n`;
+    s += `\n<span class="s-comment">Verifikasi: F1 = 2×P×R/(P+R)</span>\n`;
+    s += `   = 2 × <span class="s-val">${fmt(precision)}</span> × <span class="s-val">${fmt(recall)}</span> / (<span class="s-val">${fmt(precision)}</span> + <span class="s-val">${fmt(recall)}</span>)\n`;
+    const pr_prod = precision * recall;
+    const pr_sum = precision + recall;
+    s += `   = <span class="s-val">${fmt(2*pr_prod)}</span> / <span class="s-val">${fmt(pr_sum)}</span>\n`;
+    s += `   = <span class="s-result">${fmt(pr_sum > 0 ? 2*pr_prod/pr_sum : 0)} ✓</span>\n`;
+
+    s += `\n<span class="s-section">═══ ⑦ F2-SCORE (β=2, Recall 4× lebih penting) ═══</span>`;
+    s += `<span class="s-label">F2</span> = 5 × P × R / (4×P + R)\n`;
+    s += `   = 5 × <span class="s-val">${fmt(precision)}</span> × <span class="s-val">${fmt(recall)}</span> / (4×<span class="s-val">${fmt(precision)}</span> + <span class="s-val">${fmt(recall)}</span>)\n`;
+    s += `   = <span class="s-val">${fmt(5*pr_prod)}</span> / <span class="s-val">${fmt(4*precision+recall)}</span>\n`;
+    s += `   = <span class="s-result">${fmt(f2)} = ${pct(f2)}</span>\n`;
+
+    s += `\n<span class="s-section">═══ ⑧ F0.5-SCORE (β=0.5, Precision 4× lebih penting) ═══</span>`;
+    s += `<span class="s-label">F0.5</span> = 1.25 × P × R / (0.25×P + R)\n`;
+    s += `     = 1.25 × <span class="s-val">${fmt(precision)}</span> × <span class="s-val">${fmt(recall)}</span> / (0.25×<span class="s-val">${fmt(precision)}</span> + <span class="s-val">${fmt(recall)}</span>)\n`;
+    s += `     = <span class="s-val">${fmt(1.25*pr_prod)}</span> / <span class="s-val">${fmt(0.25*precision+recall)}</span>\n`;
+    s += `     = <span class="s-result">${fmt(f05)} = ${pct(f05)}</span>\n`;
+
+    s += `\n<span class="s-section">═══ ⑨ Fβ-SCORE (β=${beta.toFixed(1)}) ═══</span>`;
+    s += `<span class="s-label">Fβ</span> = (1+β²) × P × R / (β²×P + R)\n`;
+    s += `   = (1+<span class="s-val">${fmt(b2,2)}</span>) × <span class="s-val">${fmt(precision)}</span> × <span class="s-val">${fmt(recall)}</span> / (<span class="s-val">${fmt(b2,2)}</span>×<span class="s-val">${fmt(precision)}</span> + <span class="s-val">${fmt(recall)}</span>)\n`;
+    s += `   = <span class="s-val">${fmt((1+b2)*pr_prod)}</span> / <span class="s-val">${fmt(b2*precision+recall)}</span>\n`;
+    s += `   = <span class="s-result">${fmt(fb)} = ${pct(fb)}</span>\n`;
+    s += `<span class="s-comment">→ β > 1: Recall diberi bobot β²=${fmt(b2,2)}× lebih besar dari Precision</span>\n`;
+    s += `<span class="s-comment">→ β < 1: Precision diberi bobot 1/β²=${fmt(1/b2,2)}× lebih besar dari Recall</span>\n`;
+
+    s += `\n<span class="s-section">═══ ⑩ COHEN'S KAPPA (κ) ═══</span>`;
+    s += `<span class="s-comment">Langkah 1: Observed agreement (p_o = accuracy)</span>\n`;
+    s += `<span class="s-label">p_o</span> = (TP+TN)/N = (<span class="s-val">${tp}</span>+<span class="s-val">${tn}</span>)/<span class="s-val">${N}</span> = <span class="s-result">${fmt(po)}</span>\n`;
+    s += `\n<span class="s-comment">Langkah 2: Expected agreement by chance (p_e)</span>\n`;
+    s += `<span class="s-label">p_e</span> = (Aktual+ × Pred+ + Aktual− × Pred−) / N²\n`;
+    s += `    = (<span class="s-val">${P}</span>×<span class="s-val">${predP}</span> + <span class="s-val">${Nn}</span>×<span class="s-val">${predN}</span>) / <span class="s-val">${N}</span>²\n`;
+    s += `    = (<span class="s-val">${P*predP}</span> + <span class="s-val">${Nn*predN}</span>) / <span class="s-val">${N*N}</span>\n`;
+    s += `    = <span class="s-val">${P*predP + Nn*predN}</span> / <span class="s-val">${N*N}</span>\n`;
+    s += `    = <span class="s-result">${fmt(pe)}</span>\n`;
+    s += `\n<span class="s-comment">Langkah 3: Hitung Kappa</span>\n`;
+    s += `<span class="s-label">κ</span> = (p_o - p_e) / (1 - p_e)\n`;
+    s += `  = (<span class="s-val">${fmt(po)}</span> - <span class="s-val">${fmt(pe)}</span>) / (1 - <span class="s-val">${fmt(pe)}</span>)\n`;
+    s += `  = <span class="s-val">${fmt(po-pe)}</span> / <span class="s-val">${fmt(1-pe)}</span>\n`;
+    s += `  = <span class="s-result">${fmt(kappa)}</span>\n`;
+    s += `<span class="s-comment">→ Interpretasi: ${kappaInterp(kappa)}</span>\n`;
+
+    // Accuracy Paradox check
+    const prevalence = N > 0 ? P / N : 0;
+    if (prevalence < 0.2 || prevalence > 0.8) {
+      s += `\n<span class="s-section">═══ ⚠ PERINGATAN: ACCURACY PARADOX ═══</span>`;
+      s += `<span class="s-comment">Prevalensi kelas positif = ${pct(prevalence)} (sangat tidak seimbang)</span>\n`;
+      s += `<span class="s-comment">Akurasi (${pct(accuracy)}) bisa menyesatkan!</span>\n`;
+      const naive_acc = Math.max(prevalence, 1-prevalence);
+      s += `<span class="s-comment">Model naif (selalu prediksi kelas mayoritas) mendapat akurasi ${pct(naive_acc)}</span>\n`;
+      s += `<span class="s-comment">Gunakan F1, F2, Kappa, atau AUC sebagai metrik utama.</span>\n`;
+    }
+
+    s += `\n<span class="s-section">═══ RINGKASAN ═══</span>`;
+    s += `┌─────────────────────────┬────────────┬─────────────┐\n`;
+    s += `│ <span class="s-label">Metrik</span>                  │   <span class="s-label">Nilai</span>    │  <span class="s-label">Persentase</span>  │\n`;
+    s += `├─────────────────────────┼────────────┼─────────────┤\n`;
+    const rows = [
+      ['Accuracy', accuracy], ['Precision (PPV)', precision],
+      ['Recall (Sensitivity)', recall], ['Specificity (TNR)', specificity],
+      ['NPV', npv], ['FPR', fpr], ['FNR (Miss Rate)', fnr],
+      ['F1-Score', f1], ['F2-Score', f2], ['F0.5-Score', f05],
+      [`Fβ (β=${beta.toFixed(1)})`, fb], ["Cohen's Kappa", kappa],
+    ];
+    rows.forEach(([name, val]) => {
+      const nameP = (name + '                         ').slice(0, 23);
+      s += `│ ${nameP} │  <span class="s-result">${fmt(val)}</span>  │  <span class="s-result">${pct(val).padStart(9)}</span>  │\n`;
+    });
+    s += `└─────────────────────────┴────────────┴─────────────┘\n`;
+
+    document.getElementById('steps-panel').innerHTML = s;
+  }
+</script>
+</body>
+</html>
